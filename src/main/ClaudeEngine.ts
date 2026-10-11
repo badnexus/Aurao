@@ -65,6 +65,7 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
   /** Text of the block being streamed, mirrored to the Terminal view when the block ends. */
   private streamedText = '';
   private stopped = false;
+  private turnActive = false;
 
   constructor(private readonly opts: EngineOptions) {
     super();
@@ -112,6 +113,7 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
   }
 
   send(text: string): void {
+    this.turnActive = true;
     this.emitEvent({ kind: 'terminal', line: `> ${text.replace(/\s+/g, ' ').slice(0, 200)}`, level: 'info' });
     this.queue.push({ type: 'user', message: { role: 'user', content: text }, parent_tool_use_id: null });
   }
@@ -226,6 +228,10 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
             line: t('engine.readyClaude', { version: msg.claude_code_version, model: msg.model, mode: msg.permissionMode, n: msg.skills?.length ?? 0 }),
             level: 'info',
           });
+          if (!this.turnActive) {
+            this.turnActive = true;
+            this.emitEvent({ kind: 'turn_start' });
+          }
         } else if ((msg as { subtype?: string }).subtype !== 'thinking_tokens') {
           // thinking_tokens arrives hundreds of times per answer; '… denkt nach' already covers it.
           this.emitEvent({ kind: 'terminal', line: `system/${(msg as { subtype?: string }).subtype ?? '?'}`, level: 'info' });
@@ -296,6 +302,7 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
         return;
       }
       case 'result': {
+        this.turnActive = false;
         const isError = msg.subtype !== 'success';
         this.emitEvent({ kind: 'result', costUsd: msg.total_cost_usd, durationMs: msg.duration_ms, numTurns: msg.num_turns, isError });
         this.emitEvent({

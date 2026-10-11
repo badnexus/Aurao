@@ -19,6 +19,7 @@ export class GptsEngine extends EventEmitter implements IEngine {
     this.emitEvent({ kind: 'terminal', line: t('engine.starting', { agent: this.opts.agentName || 'Gpts', cwd: this.opts.cwd }), level: 'info' });
     
     // Fake init immediately to unlock the UI
+    this.emitEvent({ kind: 'ready' });
     this.emitEvent({
       kind: 'init',
       model: this.opts.model || 'gpts-default',

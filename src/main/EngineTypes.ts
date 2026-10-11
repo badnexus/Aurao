@@ -6,6 +6,8 @@ export type EngineEvent =
   | { kind: 'init'; model: string; version: string; permissionMode: string; skills: string[]; slashCommands: string[]; tools: string[] }
   /** Engine accepts messages; 'init' (model, skills) may only follow the first message. */
   | { kind: 'ready' }
+  /** An active turn has started (autonomous workspace hook or user prompt). */
+  | { kind: 'turn_start' }
   | { kind: 'text_start' }
   | { kind: 'text_delta'; text: string }
   | { kind: 'text_done' }

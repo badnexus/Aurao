@@ -659,13 +659,12 @@
         state.ready = true;
         state.engineSkills = ev.skills || [];
         renderQuick();
-        if (!state.current) {
-          // init comes with the start of a turn (also the workspace's own greeting): show it's working.
-          setBusy(true);
-          showWorking();
-        }
-          refreshModels(state.configuredModel || '');
+        refreshModels(state.configuredModel || '');
         setStatus(state.busy ? 'busy' : 'ready', state.busy ? t('status.busy', {agent: state.agentName || 'Assistant'}) : `${t('status.ready')} · ${ev.model}`);
+        break;
+      case 'turn_start':
+        setBusy(true);
+        showWorking();
         break;
       case 'text_start':
         hideWorking();
@@ -683,6 +682,7 @@
       case 'tool_use':
         finishAssistant();
         addActivity(ev);
+        setBusy(true);
         showWorking(WORKING_KEYS[ev.name] || 'tool');
         break;
       case 'tool_result':

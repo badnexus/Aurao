@@ -3,3 +3,5 @@ dist/
 release/
 .DS_Store
 *.log
+config.*.json
+!config.json

@@ -104,6 +104,7 @@ export class AgyEngine extends EventEmitter implements IEngine {
     });
 
     // agy has no init handshake we wait for; the UI may send as soon as the process is spawned.
+    this.emitEvent({ kind: 'ready' });
     this.emitEvent({
       kind: 'init',
       model: this.opts.model || 'default',
