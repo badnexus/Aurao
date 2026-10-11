@@ -268,15 +268,39 @@
   // serialize() turns them back into the "[Datei: C:\…]" text the engine gets.
   const input = $('input');
   const sendBtn = $('send');
+  const composerResolved = $('composer-resolved');
+
+  function updateResolvedPreview() {
+    if (!composerResolved) return;
+    const refEls = Array.from(input.querySelectorAll('.ref'));
+    if (!refEls.length) {
+      composerResolved.hidden = true;
+      composerResolved.innerHTML = '';
+      return;
+    }
+    composerResolved.innerHTML = '';
+    refEls.forEach((el) => {
+      const kind = el.dataset.kind || 'Datei';
+      const target = el.dataset.target || '';
+      const icon = refs.ICONS[kind] || '📄';
+      const label = refs.refLabel(kind, target);
+      const row = document.createElement('div');
+      row.className = 'resolved-item';
+      row.innerHTML = `<span class="resolved-icon">${icon}</span><span class="resolved-name">${esc(label)}</span><span class="resolved-arrow">→</span><span class="resolved-path" title="${esc(target)}">${esc(target)}</span>`;
+      composerResolved.appendChild(row);
+    });
+    composerResolved.hidden = false;
+  }
 
   function makeRef(kind, target) {
+    const canonical = refs.canonicalKind ? refs.canonicalKind(kind) : kind;
     const span = document.createElement('span');
-    span.className = `ref ${refs.CLASSES[kind]}`;
+    span.className = `ref ${refs.CLASSES[canonical] || 'ref-file'}`;
     span.contentEditable = 'false';
-    span.dataset.kind = kind;
+    span.dataset.kind = canonical;
     span.dataset.target = target;
-    span.title = `${target}\nStrg+Klick öffnet`;
-    span.textContent = `${refs.ICONS[kind]} ${refs.refLabel(kind, target)}`;
+    span.title = `${target}\n${t('chat.ctrlClickOpen') || 'Strg+Klick öffnet'}`;
+    span.textContent = `${refs.ICONS[canonical] || '📄'} ${refs.refLabel(canonical, target)}`;
     return span;
   }
 
@@ -304,11 +328,15 @@
     r.collapse(false);
     placeCaret(r);
   }
-  function clearInput() { input.textContent = ''; }
+  function clearInput() {
+    input.textContent = '';
+    updateResolvedPreview();
+  }
   function setText(text) {
     input.textContent = text;
     input.focus();
     caretToEnd();
+    updateResolvedPreview();
   }
   const currentRange = () => { const sel = getSelection(); return sel.rangeCount ? sel.getRangeAt(0) : null; };
   const inInput = (r) => Boolean(r && input.contains(r.startContainer));
@@ -339,6 +367,7 @@
     after.setStartAfter(last);
     after.collapse(true);
     placeCaret(after);
+    updateResolvedPreview();
   }
 
   input.addEventListener('keydown', (e) => {
@@ -352,10 +381,12 @@
     e.preventDefault();
     const t = e.clipboardData.getData('text/plain');
     if (t && !document.execCommand('insertText', false, t)) insertNodes([document.createTextNode(t)], currentRange());
+    updateResolvedPreview();
   });
   // Chromium leaves a lone <br> once everything is deleted; remove it so the placeholder shows again.
   input.addEventListener('input', () => {
     if (!input.textContent && !input.querySelector('.ref')) input.innerHTML = '';
+    updateResolvedPreview();
   });
   input.addEventListener('click', (e) => {
     const ref = e.target.closest('.ref');
@@ -387,13 +418,17 @@
     setText(phrase);
   }
 
-  // Drag & drop into the composer: local paths are resolved by the app itself (no model call).
-  const composer = $('composer');
-  ['dragenter', 'dragover'].forEach((t) => composer.addEventListener(t, (e) => { e.preventDefault(); composer.classList.add('drop'); }));
-  ['dragleave', 'drop'].forEach((t) => composer.addEventListener(t, () => composer.classList.remove('drop')));
-  composer.addEventListener('drop', async (e) => {
-    e.preventDefault(); // never let Chromium insert its own HTML
+  // Drag & drop: local paths are resolved by the app itself (no model call).
+  window.addEventListener('dragover', (e) => e.preventDefault());
+  window.addEventListener('drop', (e) => {
+    // If dropped outside the chat or explorer, prevent Electron from opening the file
+    if (!e.defaultPrevented) e.preventDefault();
+  });
+
+  async function handleDrop(e) {
+    e.preventDefault();
     const dt = e.dataTransfer;
+    if (!dt) return;
     // Insert where the item was dropped; otherwise at the caret; otherwise at the end.
     const atPoint = document.caretRangeFromPoint ? document.caretRangeFromPoint(e.clientX, e.clientY) : null;
     const point = inInput(atPoint) ? atPoint : inInput(currentRange()) ? currentRange() : null;
@@ -403,21 +438,32 @@
     let entry = null;
     try { entry = internal ? JSON.parse(internal) : null; } catch { entry = null; }
     if (entry && entry.path) {
-      items.push({ kind: entry.isDir ? t('file.folder') : t('file.file'), target: entry.path });
+      items.push({ kind: entry.isDir ? 'Ordner' : 'Datei', target: entry.path });
     } else if (dt.files && dt.files.length) {
       for (const f of Array.from(dt.files)) {
         const p = api.pathForFile(f);
         if (!p) continue;
         let isDir = false;
         try { isDir = (await api.statPath(p)).isDir; } catch { isDir = false; }
-        items.push({ kind: isDir ? t('file.folder') : t('file.file'), target: p });
+        items.push({ kind: isDir ? 'Ordner' : 'Datei', target: p });
       }
     } else {
       const uri = (dt.getData('text/uri-list') || '').split(/\r?\n/).find((l) => l && !l.startsWith('#'));
-      const t = dt.getData('text/plain');
-      const link = [uri, t && t.trim()].find((x) => x && refs.isUrl(x));
-      if (link) items.push({ kind: t('file.link'), target: link });
-      else if (t) items.push({ text: t });
+      const textData = dt.getData('text/plain');
+      const link = [uri, textData && textData.trim()].find((x) => x && refs.isUrl(x));
+      if (link) {
+        items.push({ kind: 'Link', target: link });
+      } else if (textData) {
+        const trimmed = textData.trim();
+        const isLocalPath = /^[A-Za-z]:[\\/]/.test(trimmed) || /^\\\\[^\\]+/.test(trimmed);
+        if (isLocalPath) {
+          let isDir = false;
+          try { isDir = (await api.statPath(trimmed)).isDir; } catch { isDir = false; }
+          items.push({ kind: isDir ? 'Ordner' : 'Datei', target: trimmed });
+        } else {
+          items.push({ text: textData });
+        }
+      }
     }
     if (!items.length) return;
 
@@ -429,7 +475,28 @@
       nodes.push(document.createTextNode(' '));
     }
     insertNodes(nodes, point);
-  });
+    updateResolvedPreview();
+  }
+
+  const composer = $('composer');
+  ['dragenter', 'dragover'].forEach((t) => composer.addEventListener(t, (e) => { e.preventDefault(); composer.classList.add('drop'); }));
+  ['dragleave', 'drop'].forEach((t) => composer.addEventListener(t, () => composer.classList.remove('drop')));
+  composer.addEventListener('drop', (e) => handleDrop(e));
+
+  const chatView = $('view-chat');
+  if (chatView) {
+    ['dragenter', 'dragover'].forEach((t) => chatView.addEventListener(t, (e) => { e.preventDefault(); composer.classList.add('drop'); }));
+    chatView.addEventListener('dragleave', (e) => {
+      if (!e.relatedTarget || !chatView.contains(e.relatedTarget)) {
+        composer.classList.remove('drop');
+      }
+    });
+    chatView.addEventListener('drop', (e) => {
+      if (e.target && e.target.closest('#composer')) return;
+      composer.classList.remove('drop');
+      handleDrop(e);
+    });
+  }
 
   // ---------- skill menu ----------
   // Only skills the connected workspace really has: the engine's list, else the app's own scan.

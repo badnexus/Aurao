@@ -38,6 +38,7 @@
       'chat.placeholder': 'Beschreib einfach, was du brauchst … (Dateien, Ordner oder Links hierher ziehen)',
       'chat.send': 'Senden (Enter)',
       'chat.stop': 'Stopp',
+      'chat.ctrlClickOpen': 'Strg+Klick öffnet',
       
       // Skills
       'skill.ticket.label': 'Ticket erstellen',
@@ -136,6 +137,7 @@
       'chat.placeholder': 'Just describe what you need … (Drag files, folders, or links here)',
       'chat.send': 'Send (Enter)',
       'chat.stop': 'Stop',
+      'chat.ctrlClickOpen': 'Ctrl+Click to open',
 
       // Skills
       'skill.ticket.label': 'Create ticket',
