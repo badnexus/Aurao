@@ -21,6 +21,10 @@
         el.textContent = t(key, vars);
       }
     });
+    const topbarNewChat = $('topbar-new-chat');
+    if (topbarNewChat) {
+      topbarNewChat.title = t('chat.newBtn', vars);
+    }
     if (state.ready) {
       renderQuick();
     }
@@ -1097,17 +1101,81 @@
     showView('chat');
 
     try {
+      let history = [];
+      if (sessionId && api.getSessionHistory) {
+        try {
+          history = (await api.getSessionHistory(sessionId)) || [];
+        } catch (err) {
+          console.warn('Failed to fetch session history:', err);
+        }
+      }
+
       await api.switchSession(sessionId);
       state.currentSessionId = sessionId;
+
       if (sessionId) {
-        addSystemNotice(t('history.resumedNotice', { title: title || sessionId.slice(0, 8) }));
+        if (history && history.length) {
+          renderRestoredHistory(history, title);
+        } else {
+          addSystemNotice(t('history.resumedNotice', { title: title || sessionId.slice(0, 8) }));
+        }
       } else {
         addSystemNotice(t('history.newChatStarted'));
       }
     } catch (e) {
       console.error('Failed to switch session:', e);
       termLine(`Sitzungswechsel fehlgeschlagen: ${e.message || e}`, 'stderr');
+    } finally {
+      setStatus('ready', '');
     }
+  }
+
+  function renderRestoredHistory(history, title) {
+    messages.innerHTML = '';
+    const banner = document.createElement('div');
+    banner.className = 'turn-end';
+    banner.style.cssText = 'margin:12px 0 16px 52px;opacity:0.85;';
+    banner.textContent = `📜 ${t('history.restoredBanner', { n: history.length, title: title || '' })}`;
+    messages.appendChild(banner);
+
+    for (const msg of history) {
+      if (msg.role === 'user') {
+        renderPastUserMessage(msg.text, msg.timestamp);
+      } else if (msg.role === 'assistant') {
+        renderPastAssistantMessage(msg.text, msg.timestamp);
+      }
+    }
+    scrollDown(true);
+  }
+
+  function renderPastUserMessage(text, timestamp) {
+    let timeStr = '';
+    if (timestamp) {
+      try {
+        timeStr = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } catch {
+        // ignore
+      }
+    }
+    const el = document.createElement('div');
+    el.className = 'msg user';
+    el.innerHTML = `<div class="avatar">👤</div><div><div class="bubble">${refs.renderRefs(text)}</div><div class="meta" style="justify-content:flex-end;margin-top:4px">${esc(timeStr || now())}</div></div>`;
+    messages.appendChild(el);
+  }
+
+  function renderPastAssistantMessage(text, timestamp) {
+    let timeStr = '';
+    if (timestamp) {
+      try {
+        timeStr = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } catch {
+        // ignore
+      }
+    }
+    const el = document.createElement('div');
+    el.className = 'msg';
+    el.innerHTML = `<div class="avatar">🤖</div><div class="bubble"><div class="meta"><b>${esc(state.agentName || 'Assistant')}</b><span>${esc(timeStr || now())}</span></div><div class="md">${md.parse(text)}</div></div>`;
+    messages.appendChild(el);
   }
 
   function addSystemNotice(text) {

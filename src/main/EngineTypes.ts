@@ -45,6 +45,12 @@ export interface EngineOptions {
   continueLatest?: boolean;
 }
 
+export interface HistoricalMessage {
+  role: 'user' | 'assistant';
+  text: string;
+  timestamp?: string;
+}
+
 export interface SessionSummary {
   id: string;
   title: string;

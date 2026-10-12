@@ -42,7 +42,9 @@ pre, code { font-family: Consolas, "Cascadia Mono", monospace; }
 .topbar-label, .persona-label { color: var(--muted); font-size: 12px; margin-right: 2px; white-space: nowrap; }
 .topbar-control select, .model select {
   max-width: 220px;
-  padding: 5px 10px;
+  height: 28px;
+  box-sizing: border-box;
+  padding: 0 10px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--panel);
@@ -221,8 +223,25 @@ body.resizing iframe, body.resizing .messages { pointer-events: none; }
 .empty { color: var(--muted); font-size: 12px; padding: 20px; grid-column: 1 / -1; }
 
 /* Topbar button */
-.topbar-btn { padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 13px; cursor: pointer; transition: all .15s; }
+.topbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 28px;
+  box-sizing: border-box;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all .15s;
+}
 .topbar-btn:hover { border-color: var(--accent); background: var(--panel-2); }
+#open-settings.topbar-btn { width: 28px; padding: 0; }
 
 /* Settings Modal Dialog */
 .modal-dialog {

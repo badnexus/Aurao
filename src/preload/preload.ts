@@ -27,6 +27,7 @@ const api = {
   listSessions: () => ipcRenderer.invoke('sessions:list'),
   getCurrentSession: () => ipcRenderer.invoke('sessions:current'),
   switchSession: (conversationId: string | null) => ipcRenderer.invoke('sessions:switch', conversationId),
+  getSessionHistory: (conversationId: string) => ipcRenderer.invoke('sessions:getHistory', conversationId),
   onEngineEvent: (cb: (ev: unknown) => void) => {
     const listener = (_e: Electron.IpcRendererEvent, ev: unknown) => cb(ev);
     ipcRenderer.on('engine:event', listener);

@@ -13,7 +13,7 @@ import { syncWorkspace } from './workspace';
 import { listDir, statPath } from './files';
 import { systemPromptAppend } from './persona';
 import { detectLanguage, getLanguage, setLanguage, t, type Language } from './i18n';
-import { listSessions } from './sessions';
+import { listSessions, getSessionHistory } from './sessions';
 
 let win: BrowserWindow | null = null;
 let engine: IEngine | null = null;
@@ -452,6 +452,14 @@ ipcMain.handle('sessions:list', async () => {
   }
 });
 ipcMain.handle('sessions:current', () => currentConversationId);
+ipcMain.handle('sessions:getHistory', async (_e, conversationId: string) => {
+  try {
+    return await getSessionHistory(cfg.engineType, conversationId);
+  } catch (e) {
+    sendToUi({ kind: 'terminal', line: `Get session history error: ${String(e)}`, level: 'stderr' });
+    return [];
+  }
+});
 ipcMain.handle('sessions:switch', async (_e, conversationId: string | null) => {
   currentConversationId = conversationId;
   await restartEngine();
