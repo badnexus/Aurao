@@ -24,6 +24,9 @@ const api = {
   restart: () => ipcRenderer.invoke('engine:restart'),
   listModels: () => ipcRenderer.invoke('models:list'),
   setModel: (model: string) => ipcRenderer.invoke('models:set', model),
+  listSessions: () => ipcRenderer.invoke('sessions:list'),
+  getCurrentSession: () => ipcRenderer.invoke('sessions:current'),
+  switchSession: (conversationId: string | null) => ipcRenderer.invoke('sessions:switch', conversationId),
   onEngineEvent: (cb: (ev: unknown) => void) => {
     const listener = (_e: Electron.IpcRendererEvent, ev: unknown) => cb(ev);
     ipcRenderer.on('engine:event', listener);

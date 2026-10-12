@@ -39,6 +39,21 @@ export interface EngineOptions {
   allowedTools?: string[];
   /** UI language, passed to the workspace's hooks as TERMI_LANGUAGE. */
   language?: string;
+  /** Resume an existing conversation/session by ID. */
+  resumeConversationId?: string;
+  /** Continue the most recent conversation automatically. */
+  continueLatest?: boolean;
+}
+
+export interface SessionSummary {
+  id: string;
+  title: string;
+  preview: string;
+  lastModified: string;
+  stepCount: number;
+  workspace?: string;
+  matchesCwd?: boolean;
+  isCurrent?: boolean;
 }
 
 export interface ModelChoice {

@@ -14,6 +14,7 @@
         <div class="brand-title">Termi</div>
         <div class="brand-sub" data-i18n="brand.sub">Dein Assistent – einfach erklärt.</div>
       </div>
+      <button class="topbar-btn ghost" id="topbar-new-chat" title="Neuen Chat starten" data-i18n="chat.newBtn" style="margin-left: 8px;">➕</button>
     </div>
     <div class="topbar-right">
       <label class="topbar-control persona" title="Ansprache wählen">
@@ -51,6 +52,7 @@
   <div class="layout" id="layout">
     <nav class="sidenav">
       <button class="nav active" data-view="chat"><span class="ico">💬</span><span data-i18n="nav.chat">Chat</span></button>
+      <button class="nav" data-view="history"><span class="ico">📜</span><span data-i18n="nav.history">Verlauf</span></button>
       <button class="nav" data-view="terminal"><span class="ico">&gt;_</span><span data-i18n="nav.terminal">Terminal</span><span class="badge" id="terminal-badge" hidden>0</span></button>
       <div class="nav-spacer"></div>
       <button class="nav nav-toggle" id="explorer-toggle" title="Datei-Explorer ein-/ausblenden"><span class="ico">📁</span><span data-i18n="nav.explorer">Explorer</span></button>
@@ -70,6 +72,27 @@
           </div>
           <div class="composer-resolved" id="composer-resolved" hidden></div>
           <div class="hint" data-i18n="hint.main">Nichts mit Außenwirkung passiert ohne deine Freigabe. Entwürfe siehst du zuerst.</div>
+        </div>
+      </section>
+
+      <!-- Verlauf / Chat-Historie -->
+      <section class="view" id="view-history" hidden>
+        <div class="panel-head">
+          <div>
+            <div class="panel-title" data-i18n="history.title">📜 Chat-Verlauf &amp; Sitzungen</div>
+            <div class="panel-sub" data-i18n="history.sub">Wähle eine frühere Sitzung, um sie nahtlos fortzusetzen, oder starte einen neuen Chat.</div>
+          </div>
+          <div class="history-head-actions">
+            <button class="primary" id="history-new-chat-btn" data-i18n="history.newChat">➕ Neuer Chat</button>
+            <button class="ghost" id="history-refresh-btn" data-i18n="history.refresh">↻ Aktualisieren</button>
+          </div>
+        </div>
+        <div class="history-content">
+          <div class="history-filter-bar">
+            <input type="text" id="history-search" class="history-search" placeholder="Unterhaltungen filtern …" data-i18n="history.searchPlaceholder" />
+            <span class="history-count" id="history-count"></span>
+          </div>
+          <div class="history-list" id="history-list"></div>
         </div>
       </section>
 

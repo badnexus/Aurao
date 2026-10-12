@@ -13,11 +13,13 @@ import { syncWorkspace } from './workspace';
 import { listDir, statPath } from './files';
 import { systemPromptAppend } from './persona';
 import { detectLanguage, getLanguage, setLanguage, t, type Language } from './i18n';
+import { listSessions } from './sessions';
 
 let win: BrowserWindow | null = null;
 let engine: IEngine | null = null;
 let cfg: PocConfig = loadConfig();
 let workspaceSynced = false;
+let currentConversationId: string | null = null;
 
 /** Only via the launch argument, never persisted: every session without it shows Freigabe-Karten. */
 const SKIP_PERMISSIONS = process.argv.includes('--dangerously-skip-permissions');
@@ -82,6 +84,7 @@ function createEngine(): IEngine {
     skipPermissions: SKIP_PERMISSIONS || effectiveApprovalMode === 'bypass',
     approvalMode: effectiveApprovalMode,
     availableModels: cfg.availableModels,
+    resumeConversationId: currentConversationId || undefined,
   };
   if (cfg.engineType === 'agy') return new AgyEngine(common);
   if (cfg.engineType === 'gpts') return new GptsEngine(common);
@@ -153,7 +156,7 @@ async function startEngine(): Promise<void> {
     engine.on('event', onDevEvent);
   }
   await engine.start();
-  if (cfg.greetOnStart) engine.send(t('greeting', { agent: cfg.agentName }));
+  if (cfg.greetOnStart && !currentConversationId) engine.send(t('greeting', { agent: cfg.agentName }));
 }
 
 function createWindow(): void {
@@ -434,6 +437,25 @@ ipcMain.handle('models:set', async (_e, model: string) => {
   }
   if (!live) await restartEngine();
   return { model: cfg.model ?? '', restarted: !live };
+});
+
+ipcMain.handle('sessions:list', async () => {
+  try {
+    const list = await listSessions(cfg.engineType, resolveCwd());
+    return list.map((s) => ({
+      ...s,
+      isCurrent: s.id === currentConversationId,
+    }));
+  } catch (e) {
+    sendToUi({ kind: 'terminal', line: `Sessions list error: ${String(e)}`, level: 'stderr' });
+    return [];
+  }
+});
+ipcMain.handle('sessions:current', () => currentConversationId);
+ipcMain.handle('sessions:switch', async (_e, conversationId: string | null) => {
+  currentConversationId = conversationId;
+  await restartEngine();
+  return { ok: true, currentId: currentConversationId };
 });
 
 // --- app lifecycle ------------------------------------------------------------------------

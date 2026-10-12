@@ -100,6 +100,8 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
       ...(this.opts.model ? { model: this.opts.model } : {}),
       ...(this.opts.effort ? { effort: this.opts.effort } : {}),
       ...(this.opts.claudeExecutable ? { pathToClaudeCodeExecutable: this.opts.claudeExecutable } : {}),
+      ...(this.opts.resumeConversationId ? { resume: this.opts.resumeConversationId } : {}),
+      ...(this.opts.continueLatest ? { continue: true } : {}),
     };
     this.emitEvent({ kind: 'terminal', line: t('engine.starting', { agent: this.opts.agentName || 'Agent', cwd: this.opts.cwd }), level: 'info' });
     if (this.approvalMode === 'bypass') this.emitEvent({ kind: 'terminal', line: t('engine.skipWarning'), level: 'stderr' });

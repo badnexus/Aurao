@@ -69,6 +69,7 @@
     document.querySelectorAll('.nav[data-view]').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
     document.querySelectorAll('.view').forEach((v) => (v.hidden = v.id !== `view-${view}`));
     if (view === 'terminal') { state.unseenTerminal = 0; updateTerminalBadge(); }
+    if (view === 'history') { loadHistory(); }
     if (view === 'chat') $('input').focus();
   }
   document.querySelectorAll('.nav[data-view]').forEach((b) => b.addEventListener('click', () => showView(b.dataset.view)));
@@ -990,6 +991,145 @@
       if (updated.workspaceRoot) renderDir(updated.workspaceRoot);
     });
   }
+
+  // ---------- history & session resuming ----------
+  async function loadHistory() {
+    try {
+      const [sessions, currentId] = await Promise.all([
+        api.listSessions(),
+        api.getCurrentSession(),
+      ]);
+      state.sessions = sessions || [];
+      state.currentSessionId = currentId || null;
+      renderHistory();
+    } catch (e) {
+      console.error('Failed to load history:', e);
+      termLine(`Chat-Verlauf laden fehlgeschlagen: ${e.message || e}`, 'stderr');
+    }
+  }
+
+  function renderHistory() {
+    const listEl = $('history-list');
+    if (!listEl) return;
+    const filter = ($('history-search')?.value || '').trim().toLowerCase();
+    const filtered = (state.sessions || []).filter((s) => {
+      if (!filter) return true;
+      return (
+        (s.title && s.title.toLowerCase().includes(filter)) ||
+        (s.preview && s.preview.toLowerCase().includes(filter)) ||
+        (s.workspace && s.workspace.toLowerCase().includes(filter))
+      );
+    });
+
+    const countEl = $('history-count');
+    if (countEl) {
+      countEl.textContent = `${filtered.length} / ${state.sessions.length}`;
+    }
+
+    if (!filtered.length) {
+      listEl.innerHTML = `<div class="history-empty">${t('history.empty')}</div>`;
+      return;
+    }
+
+    listEl.innerHTML = '';
+    for (const s of filtered) {
+      const isCurrent = s.isCurrent || s.id === state.currentSessionId;
+      const card = document.createElement('div');
+      card.className = `history-card${isCurrent ? ' current' : ''}`;
+
+      let dateStr = '';
+      if (s.lastModified) {
+        try {
+          const d = new Date(s.lastModified);
+          dateStr = d.toLocaleDateString(i18n.getLang() === 'de' ? 'de-DE' : 'en-US', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+        } catch {
+          dateStr = s.lastModified;
+        }
+      }
+
+      const title = s.title || s.preview || 'Chat';
+      const preview = s.preview || '';
+
+      card.innerHTML = `
+        <div class="history-card-main">
+          <div class="history-card-title-row">
+            <span class="history-card-title">${esc(title)}</span>
+            ${isCurrent ? `<span class="history-badge active">${t('history.currentBadge')}</span>` : ''}
+            ${s.matchesCwd ? `<span class="history-badge" title="${esc(s.workspace || '')}">📁 Workspace</span>` : ''}
+          </div>
+          ${preview && preview !== title ? `<div class="history-card-preview">${esc(preview)}</div>` : ''}
+          <div class="history-card-meta">
+            ${dateStr ? `<span>🕒 ${esc(dateStr)}</span>` : ''}
+            ${s.stepCount ? `<span>💬 ${t('history.steps', { n: s.stepCount })}</span>` : ''}
+            ${s.workspace ? `<span>${t('history.workspace', { path: esc(s.workspace) })}</span>` : ''}
+          </div>
+        </div>
+        <div class="history-card-action">
+          ${
+            isCurrent
+              ? `<button class="ghost disabled" disabled>${t('history.currentBadge')}</button>`
+              : `<button class="primary history-resume-btn">${t('history.resumeBtn')}</button>`
+          }
+        </div>
+      `;
+
+      card.addEventListener('click', () => {
+        if (!isCurrent) {
+          switchSession(s.id, title);
+        } else {
+          showView('chat');
+        }
+      });
+
+      listEl.appendChild(card);
+    }
+  }
+
+  async function switchSession(sessionId, title) {
+    setStatus('busy', t('status.starting'));
+    messages.innerHTML = '';
+    showView('chat');
+
+    try {
+      await api.switchSession(sessionId);
+      state.currentSessionId = sessionId;
+      if (sessionId) {
+        addSystemNotice(t('history.resumedNotice', { title: title || sessionId.slice(0, 8) }));
+      } else {
+        addSystemNotice(t('history.newChatStarted'));
+      }
+    } catch (e) {
+      console.error('Failed to switch session:', e);
+      termLine(`Sitzungswechsel fehlgeschlagen: ${e.message || e}`, 'stderr');
+    }
+  }
+
+  function addSystemNotice(text) {
+    const el = document.createElement('div');
+    el.className = 'msg system-notice';
+    el.style.cssText = 'align-self:center;margin:16px auto;padding:8px 18px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);border-radius:20px;font-size:13px;color:#93c5fd;display:flex;align-items:center;gap:6px;';
+    el.textContent = text;
+    messages.appendChild(el);
+    scrollDown(true);
+  }
+
+  const topbarNewChatBtn = $('topbar-new-chat');
+  if (topbarNewChatBtn) topbarNewChatBtn.addEventListener('click', () => switchSession(null, ''));
+
+  const historyNewChatBtn = $('history-new-chat-btn');
+  if (historyNewChatBtn) historyNewChatBtn.addEventListener('click', () => switchSession(null, ''));
+
+  const historyRefreshBtn = $('history-refresh-btn');
+  if (historyRefreshBtn) historyRefreshBtn.addEventListener('click', () => loadHistory());
+
+  const historySearchInput = $('history-search');
+  if (historySearchInput) historySearchInput.addEventListener('input', () => renderHistory());
 
   // ---------- boot ----------
   (async () => {

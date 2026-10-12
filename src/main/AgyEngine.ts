@@ -56,6 +56,15 @@ export class AgyEngine extends EventEmitter implements IEngine {
     if (this.approvalMode === 'bypass') {
       this.emitEvent({ kind: 'terminal', line: t('engine.skipWarning'), level: 'stderr' });
     }
+    if (this.opts.resumeConversationId) {
+      if (!SAFE_ARG.test(this.opts.resumeConversationId)) {
+        this.emitEvent({ kind: 'error', text: `Ungültige Sitzungs-ID: ${this.opts.resumeConversationId}` });
+        return;
+      }
+      args.push('--conversation', this.opts.resumeConversationId);
+    } else if (this.opts.continueLatest) {
+      args.push('--continue');
+    }
     if (this.opts.model) {
       if (!SAFE_ARG.test(this.opts.model)) {
         this.emitEvent({ kind: 'error', text: t('agy.invalidModel', { model: this.opts.model }) });
