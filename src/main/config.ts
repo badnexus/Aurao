@@ -11,6 +11,8 @@ export type Persona = 'standard' | 'soft';
 export type EngineType = 'claude' | 'agy' | 'gpts';
 export type Effort = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
 const EFFORTS: Effort[] = ['low', 'medium', 'high', 'xhigh', 'max'];
+export type ApprovalMode = 'ask' | 'safe' | 'bypass';
+const APPROVAL_MODES: ApprovalMode[] = ['ask', 'safe', 'bypass'];
 
 export interface PocConfig {
   /** The backend engine to use ('claude' for Claude SDK, 'agy' for Antigravity, 'gpts' for GPTS). */
@@ -32,6 +34,8 @@ export interface PocConfig {
   persona: Persona;
   /** UI language. Omit to follow the OS language (German locale -> 'de', otherwise 'en'). Set by the DE|EN switch. */
   language?: Language;
+  /** Approval mode ('ask' | 'safe' | 'bypass'). Defaults to 'safe'. */
+  approvalMode?: ApprovalMode;
   /** Optional model override (alias or full id). Omit to use the CLI default. Set by the model picker. */
   model?: string;
   /** Models offered in the picker for engines that cannot list them (agy, gpts). */
@@ -84,7 +88,7 @@ function readJson(file: string): Partial<PocConfig> | null {
  * these are kept in the user's config.json, and only where they differ from the bundled config; everything else
  * always comes from the bundled config, so a new release (model, effort, allowedTools …) reaches every user.
  */
-const USER_KEYS = ['persona', 'language', 'model', 'workspaceRoot'] as const;
+const USER_KEYS = ['persona', 'language', 'model', 'workspaceRoot', 'approvalMode'] as const;
 
 function userOverrides(cfg: Partial<PocConfig>, bundled: Partial<PocConfig>): Partial<PocConfig> {
   const out: Record<string, unknown> = {};
@@ -108,6 +112,7 @@ export function loadConfig(): PocConfig {
   if (!ENGINE_TYPES.includes(cfg.engineType)) cfg.engineType = DEFAULTS.engineType;
   if (!PERSONAS.includes(cfg.persona)) cfg.persona = DEFAULTS.persona;
   if (cfg.language !== undefined && !LANGUAGES.includes(cfg.language)) delete cfg.language;
+  if (cfg.approvalMode !== undefined && !APPROVAL_MODES.includes(cfg.approvalMode)) delete cfg.approvalMode;
   if (typeof cfg.agentName !== 'string' || !cfg.agentName.trim()) cfg.agentName = DEFAULTS.agentName;
   if (typeof cfg.workspaceRepo !== 'string') cfg.workspaceRepo = DEFAULTS.workspaceRepo;
   if (typeof cfg.workspaceRoot !== 'string') cfg.workspaceRoot = DEFAULTS.workspaceRoot;

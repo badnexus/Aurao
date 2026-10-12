@@ -16,6 +16,8 @@ const api = {
   answerPermission: (requestId: string, allow: boolean, always = false) =>
     ipcRenderer.send('permission:answer', { requestId, allow, always }),
   setPersona: (persona: 'standard' | 'soft') => ipcRenderer.invoke('persona:set', persona),
+  setLanguage: (language: string) => ipcRenderer.invoke('language:set', language),
+  setApprovalMode: (mode: string) => ipcRenderer.invoke('approvals:set', mode),
   restart: () => ipcRenderer.invoke('engine:restart'),
   listModels: () => ipcRenderer.invoke('models:list'),
   setModel: (model: string) => ipcRenderer.invoke('models:set', model),

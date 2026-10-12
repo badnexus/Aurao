@@ -7,6 +7,7 @@ import * as path from 'node:path';
 import type { IEngine } from './IEngine';
 import type { EngineEvent, EngineOptions, ModelChoice } from './EngineTypes';
 import { assistantTerminalLines, describeTool } from './EngineTypes';
+import type { ApprovalMode } from './config';
 import { t } from './i18n';
 
 export class AgyEngine extends EventEmitter implements IEngine {
@@ -27,6 +28,7 @@ export class AgyEngine extends EventEmitter implements IEngine {
   private hookInstalled = false;
   private pendingHooks = new Map<string, { toolName: string; resolve: (res: { decision: 'allow' | 'deny'; reason?: string }) => void }>();
   private alwaysAllowedTools = new Set<string>();
+  private approvalMode: ApprovalMode = 'safe';
 
   isAlive(): boolean {
     return Boolean(this.proc) && !this.exited && Boolean(this.proc?.stdin?.writable);
@@ -34,6 +36,7 @@ export class AgyEngine extends EventEmitter implements IEngine {
 
   constructor(private readonly opts: EngineOptions) {
     super();
+    this.approvalMode = opts.approvalMode ?? (opts.skipPermissions ? 'bypass' : 'safe');
   }
 
   emitEvent(ev: EngineEvent): void {
@@ -49,10 +52,9 @@ export class AgyEngine extends EventEmitter implements IEngine {
     // When permissions are enabled, our PreToolUse hook server intercepts every dangerous tool call, displays
     // the Approval Card in Termi, and holds the hook response until the user approves or denies.
     args.push('--dangerously-skip-permissions');
-    if (this.opts.skipPermissions) {
+    await this.setupHookServer();
+    if (this.approvalMode === 'bypass') {
       this.emitEvent({ kind: 'terminal', line: t('engine.skipWarning'), level: 'stderr' });
-    } else {
-      await this.setupHookServer();
     }
     if (this.opts.model) {
       if (!SAFE_ARG.test(this.opts.model)) {
@@ -250,6 +252,11 @@ export class AgyEngine extends EventEmitter implements IEngine {
     this.emitEvent({ kind: 'terminal', line: `${allow ? t('engine.allowed') : t('engine.denied')} (${requestId.slice(0, 8)})`, level: 'hook' });
   }
 
+  setApprovalMode(mode: ApprovalMode): void {
+    this.approvalMode = mode;
+    this.emitEvent({ kind: 'terminal', line: t('engine.approvalModeSwitched', { mode }), level: 'info' });
+  }
+
   private setupHookServer(): Promise<void> {
     return new Promise<void>((resolve) => {
       this.hookServer = http.createServer((req, res) => {
@@ -369,7 +376,13 @@ try {
       'fetch_web_page',
     ]);
 
-    if (READ_ONLY_TOOLS.has(toolName) || this.alwaysAllowedTools.has(toolName)) {
+    if (this.approvalMode === 'bypass' || this.alwaysAllowedTools.has(toolName)) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ decision: 'allow' }));
+      return;
+    }
+
+    if (this.approvalMode === 'safe' && READ_ONLY_TOOLS.has(toolName)) {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ decision: 'allow' }));
       return;

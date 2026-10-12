@@ -16,23 +16,36 @@
       </div>
     </div>
     <div class="topbar-right">
-      <div class="persona" title="Ansprache wählen">
-        <span class="persona-label" data-i18n="persona.label">Ansprache</span>
-        <button class="seg active" data-persona="standard" data-i18n="persona.standard">Standard</button>
-        <button class="seg" data-persona="soft" data-i18n="persona.soft">Einfach</button>
-      </div>
-      <div class="language-toggle" title="Sprache / Language">
-        <button class="seg active" data-lang="de">DE</button>
-        <button class="seg" data-lang="en">EN</button>
-      </div>
-      <label class="model" title="Modell wählen">
-        <span class="persona-label" data-i18n="model.label">Modell</span>
+      <label class="topbar-control persona" title="Ansprache wählen">
+        <span class="topbar-label" data-i18n="persona.label">Ansprache</span>
+        <select id="persona">
+          <option value="standard" data-i18n="persona.standard">Standard</option>
+          <option value="soft" data-i18n="persona.soft">Einfach</option>
+        </select>
+      </label>
+      <label class="topbar-control language-toggle" title="Sprache / Language">
+        <span class="topbar-label" data-i18n="lang.label">Sprache</span>
+        <select id="language">
+          <option value="de">DE</option>
+          <option value="en">EN</option>
+        </select>
+      </label>
+      <label class="topbar-control model" title="Modell wählen">
+        <span class="topbar-label" data-i18n="model.label">Modell</span>
         <select id="model" disabled><option value="">Standard</option></select>
+      </label>
+      <label class="topbar-control approvals" title="Freigaben wählen">
+        <span class="topbar-label" data-i18n="approvals.label">Freigaben</span>
+        <select id="approvals">
+          <option value="ask" data-i18n="approvals.ask">Mit Freigabe</option>
+          <option value="safe" data-i18n="approvals.safe">Nur Änderungen</option>
+          <option value="bypass" data-i18n="approvals.bypass">Ohne Freigabe</option>
+        </select>
       </label>
       <div class="status" id="status"><span class="dot"></span><span id="status-text" data-i18n="status.starting">Engine startet …</span></div>
     </div>
   </header>
-  <div class="danger-banner" id="skip-banner" hidden data-i18n="banner.danger">⚠ Freigaben deaktiviert (--dangerously-skip-permissions) – Aktionen werden ohne Rückfrage ausgeführt.</div>
+  <div class="danger-banner" id="skip-banner" hidden data-i18n="banner.danger">⚠ Freigaben deaktiviert – Aktionen werden ohne Rückfrage ausgeführt.</div>
 
   <div class="layout" id="layout">
     <nav class="sidenav">

@@ -1,5 +1,6 @@
 import { EventEmitter } from 'node:events';
 import type { EngineEvent, ModelChoice } from './EngineTypes';
+import type { ApprovalMode } from './config';
 
 export interface IEngine extends EventEmitter {
   start(): Promise<void>;
@@ -7,6 +8,8 @@ export interface IEngine extends EventEmitter {
   send(text: string): void;
   interrupt(): Promise<void>;
   answerPermission(requestId: string, allow: boolean, always: boolean): void;
+  /** Set approval mode live ('ask' | 'safe' | 'bypass'). */
+  setApprovalMode?(mode: ApprovalMode): void;
   /** Models the user can pick from; the current one is reported by the 'init' event. */
   listModels(): Promise<ModelChoice[]>;
   /** Switch model. Returns true if done live, false if the caller must restart the engine. */

@@ -2,7 +2,7 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import { loadConfig, saveConfig, configIsBroken, configPath, POC_ROOT, type PocConfig, type Persona } from './config';
+import { loadConfig, saveConfig, configIsBroken, configPath, POC_ROOT, type PocConfig, type Persona, type ApprovalMode } from './config';
 import type { EngineEvent } from './EngineTypes';
 import type { IEngine } from './IEngine';
 import { ClaudeEngine } from './ClaudeEngine';
@@ -74,11 +74,13 @@ function resolveCwd(): string {
 
 function createEngine(): IEngine {
   const cwd = resolveCwd();
+  const effectiveApprovalMode = cfg.approvalMode || (SKIP_PERMISSIONS ? 'bypass' : 'safe');
   const common = {
     cwd,
     model: cfg.model,
     agentName: cfg.agentName,
-    skipPermissions: SKIP_PERMISSIONS,
+    skipPermissions: SKIP_PERMISSIONS || effectiveApprovalMode === 'bypass',
+    approvalMode: effectiveApprovalMode,
     availableModels: cfg.availableModels,
   };
   if (cfg.engineType === 'agy') return new AgyEngine(common);
@@ -212,7 +214,12 @@ function createWindow(): void {
 
 // --- IPC: everything the renderer may ask for --------------------------------------------
 
-ipcMain.handle('config:get', () => ({ ...cfg, language: getLanguage(), runtime: { skipPermissions: SKIP_PERMISSIONS, configPath: configPath() } }));
+ipcMain.handle('config:get', () => ({
+  ...cfg,
+  approvalMode: cfg.approvalMode || (SKIP_PERMISSIONS ? 'bypass' : 'safe'),
+  language: getLanguage(),
+  runtime: { skipPermissions: SKIP_PERMISSIONS, configPath: configPath() },
+}));
 ipcMain.handle('skills:list', () => listWorkspaceSkills(cfg.workspaceRepo));
 ipcMain.handle('files:list', (_e, dir?: string) => listDir(dir || cfg.workspaceRoot));
 ipcMain.handle('files:stat', (_e, p: string) => statPath(p));
@@ -253,6 +260,12 @@ ipcMain.handle('persona:set', async (_e, persona: Persona) => {
   persist();
   await restartEngine(); // persona lives in the system prompt, so a new session is needed
   return cfg.persona;
+});
+ipcMain.handle('approvals:set', (_e, mode: ApprovalMode) => {
+  cfg = { ...cfg, approvalMode: mode };
+  persist();
+  engine?.setApprovalMode?.(mode);
+  return cfg.approvalMode;
 });
 ipcMain.handle('engine:restart', () => restartEngine());
 // Language only changes texts: new Terminal lines use it right away, no new session needed.

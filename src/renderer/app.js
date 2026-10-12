@@ -30,6 +30,7 @@
   const state = {
     view: 'chat',
     persona: 'standard',
+    approvalMode: 'safe',
     dir: null,
     busy: false,
     ready: false,
@@ -699,19 +700,61 @@
     updateModelSelectState();
   });
 
-  // ---------- persona ----------
-  document.querySelectorAll('.seg').forEach((b) =>
-    b.addEventListener('click', async () => {
-      if (b.dataset.persona === state.persona) return;
-      state.persona = b.dataset.persona;
-      document.querySelectorAll('.seg').forEach((x) => x.classList.toggle('active', x === b));
+  // ---------- persona picker ----------
+  const personaSelect = $('persona');
+  if (personaSelect) {
+    personaSelect.addEventListener('change', async () => {
+      const chosen = personaSelect.value;
+      if (chosen === state.persona) return;
+      state.persona = chosen;
       state.ready = false;
       finishAssistant();
       setStatus('', t('status.changing_persona'));
       termLine(`Ansprache gewechselt: ${state.persona === 'soft' ? t('persona.soft') : t('persona.standard')} – neue Sitzung`, 'info');
       await api.setPersona(state.persona);
-    }),
-  );
+    });
+  }
+
+  // ---------- language picker ----------
+  const languageSelect = $('language');
+  if (languageSelect) {
+    languageSelect.addEventListener('change', async () => {
+      const lang = languageSelect.value;
+      if (lang === i18n.getLang()) return;
+      i18n.setLang(lang);
+      translateUI();
+      if (api.setLanguage) await api.setLanguage(lang);
+    });
+  }
+
+  // ---------- approvals picker ----------
+  const approvalsSelect = $('approvals');
+  function updateApprovalsUI(mode) {
+    state.approvalMode = mode;
+    if (approvalsSelect) {
+      approvalsSelect.value = mode;
+      approvalsSelect.classList.toggle('bypass', mode === 'bypass');
+    }
+    const isBypass = mode === 'bypass';
+    document.body.classList.toggle('skip-perms', isBypass);
+    const banner = $('skip-banner');
+    if (banner) banner.hidden = !isBypass;
+    const hint = document.querySelector('.hint');
+    if (hint) {
+      hint.dataset.i18n = isBypass ? 'hint.danger' : 'hint.main';
+      hint.textContent = t(hint.dataset.i18n);
+    }
+  }
+
+  if (approvalsSelect) {
+    approvalsSelect.addEventListener('change', async () => {
+      const mode = approvalsSelect.value;
+      updateApprovalsUI(mode);
+      const modeLabel = t(`approvals.${mode}`);
+      termLine(`Freigabemodus gewechselt: ${modeLabel}`, 'info');
+      if (api.setApprovalMode) await api.setApprovalMode(mode);
+    });
+  }
 
   // ---------- engine events ----------
   api.onEngineEvent((ev) => {
@@ -804,29 +847,15 @@
     if (brandTitle) brandTitle.textContent = state.agentName;
 
     state.configuredModel = cfg.model || '';
-    if (cfg.runtime && cfg.runtime.skipPermissions) {
-      document.body.classList.add('skip-perms');
-      $('skip-banner').hidden = false;
-      document.querySelector('.hint').dataset.i18n = 'hint.danger';
-    }
+    const initialApprovalMode = cfg.approvalMode || (cfg.runtime && cfg.runtime.skipPermissions ? 'bypass' : 'safe');
+    updateApprovalsUI(initialApprovalMode);
 
     if (cfg.language) i18n.setLang(cfg.language);
+    if (languageSelect) languageSelect.value = i18n.getLang();
     translateUI();
 
-    document.querySelectorAll('.language-toggle .seg').forEach(b => {
-      b.classList.toggle('active', b.dataset.lang === i18n.getLang());
-      b.addEventListener('click', async () => {
-        const lang = b.dataset.lang;
-        if (lang === i18n.getLang()) return;
-        i18n.setLang(lang);
-        document.querySelectorAll('.language-toggle .seg').forEach(x => x.classList.toggle('active', x.dataset.lang === lang));
-        translateUI();
-        api.setLanguage(lang);
-      });
-    });
-
     state.persona = cfg.persona || 'standard';
-    document.querySelectorAll('.seg').forEach((x) => x.classList.toggle('active', x.dataset.persona === state.persona));
+    if (personaSelect) personaSelect.value = state.persona;
     if (cfg.greetOnStart) setBusy(true); // the greeting turn is already on its way
     try { state.workspaceSkills = (await api.listSkills()) || []; } catch { state.workspaceSkills = []; }
     renderQuick();

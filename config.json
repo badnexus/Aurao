@@ -2,5 +2,6 @@
   "engineType": "agy",
   "agentName": "Assistant",
   "greetOnStart": false,
-  "persona": "standard"
+  "persona": "standard",
+  "approvalMode": "safe"
 }

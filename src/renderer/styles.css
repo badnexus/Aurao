@@ -37,15 +37,28 @@ pre, code { font-family: Consolas, "Cascadia Mono", monospace; }
 .logo { width: 44px; height: 44px; border-radius: 12px; background: var(--accent); display: grid; place-items: center; font-weight: 700; font-family: Consolas, monospace; font-size: 18px; box-shadow: 0 6px 20px rgba(47,123,255,.35); }
 .brand-title { font-size: 18px; font-weight: 700; }
 .brand-sub { color: var(--muted); font-size: 12px; }
-.topbar-right { display: flex; align-items: center; gap: 18px; }
-.persona { display: flex; align-items: center; gap: 6px; }
-.persona-label { color: var(--muted); font-size: 12px; margin-right: 4px; }
+.topbar-right { display: flex; align-items: center; gap: 14px; }
+.topbar-control { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.topbar-label, .persona-label { color: var(--muted); font-size: 12px; margin-right: 2px; white-space: nowrap; }
+.topbar-control select, .model select {
+  max-width: 220px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.topbar-control select:hover, .model select:hover { border-color: var(--muted); }
+.topbar-control select:focus, .model select:focus { border-color: var(--accent); }
+.topbar-control select:disabled, .model select:disabled { opacity: .6; cursor: not-allowed; }
+.approvals select.bypass { border-color: var(--red); color: #fca5a5; }
 .seg { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel); color: var(--muted); font-size: 12px; }
 .seg.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-.model { display: flex; align-items: center; gap: 6px; }
-.model select { max-width: 220px; padding: 5px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font: inherit; font-size: 12px; outline: none; }
-.model select:focus { border-color: var(--accent); }
-.model select:disabled { opacity: .6; }
 .status { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
 .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 10px var(--amber); }
 .status.ready .dot { background: var(--green); box-shadow: 0 0 10px var(--green); }

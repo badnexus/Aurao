@@ -9,6 +9,7 @@ import { EventEmitter } from 'node:events';
 import type { EngineEvent, EngineOptions, ModelChoice } from './EngineTypes';
 import type { IEngine } from './IEngine';
 import { assistantTerminalLines, describeTool, summarizeToolResult } from './EngineTypes';
+import type { ApprovalMode } from './config';
 import { t } from './i18n';
 import type {
   CanUseTool,
@@ -66,9 +67,11 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
   private streamedText = '';
   private stopped = false;
   private turnActive = false;
+  private approvalMode: ApprovalMode = 'safe';
 
   constructor(private readonly opts: EngineOptions) {
     super();
+    this.approvalMode = opts.approvalMode ?? (opts.skipPermissions ? 'bypass' : 'safe');
   }
 
   emitEvent(ev: EngineEvent): void {
@@ -78,14 +81,12 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
 
   async start(): Promise<void> {
     const sdk = await import('@anthropic-ai/claude-agent-sdk');
-    const skip = Boolean(this.opts.skipPermissions);
     const options: Options = {
       cwd: this.opts.cwd,
-      // Explicit: the CLI may default to auto mode, which would skip the Freigabe-Karte.
-      // Bypass only when the app was launched with --dangerously-skip-permissions.
-      ...(skip
-        ? { permissionMode: 'bypassPermissions', allowDangerouslySkipPermissions: true }
-        : { permissionMode: 'default', canUseTool: this.canUseTool, ...(this.opts.allowedTools?.length ? { allowedTools: this.opts.allowedTools } : {}) }),
+      permissionMode: 'default',
+      canUseTool: this.canUseTool,
+      allowDangerouslySkipPermissions: true,
+      ...(this.opts.allowedTools?.length ? { allowedTools: this.opts.allowedTools } : {}),
       includePartialMessages: true,
       // Lets the workspace's hooks (e.g. a SessionStart welcome) adapt to this surface:
       // TERMI_SURFACE says chat UI with skill buttons instead of a terminal, TERMI_LANGUAGE the UI language.
@@ -101,7 +102,7 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
       ...(this.opts.claudeExecutable ? { pathToClaudeCodeExecutable: this.opts.claudeExecutable } : {}),
     };
     this.emitEvent({ kind: 'terminal', line: t('engine.starting', { agent: this.opts.agentName || 'Agent', cwd: this.opts.cwd }), level: 'info' });
-    if (skip) this.emitEvent({ kind: 'terminal', line: t('engine.skipWarning'), level: 'stderr' });
+    if (this.approvalMode === 'bypass') this.emitEvent({ kind: 'terminal', line: t('engine.skipWarning'), level: 'stderr' });
     this.query = sdk.query({ prompt: this.queue, options });
     void this.consume(this.query);
     // The CLI sends its 'init' message only with the first answer, so the UI would wait forever
@@ -157,6 +158,11 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
     return true;
   }
 
+  setApprovalMode(mode: ApprovalMode): void {
+    this.approvalMode = mode;
+    this.emitEvent({ kind: 'terminal', line: t('engine.approvalModeSwitched', { mode }), level: 'info' });
+  }
+
   async stop(): Promise<void> {
     if (this.stopped) return;
     this.stopped = true;
@@ -175,7 +181,18 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
 
   // --- permission callback -> Freigabe-Karte --------------------------------------------
 
+  private isReadOnlyTool(toolName: string): boolean {
+    const READ_ONLY = new Set(['Read', 'Glob', 'Grep', 'LS', 'View', 'FileRead', 'view_file', 'read_url_content', 'search_web', 'list_directory']);
+    return READ_ONLY.has(toolName);
+  }
+
   private canUseTool: CanUseTool = (toolName, input, options) => {
+    if (this.approvalMode === 'bypass') {
+      return Promise.resolve({ behavior: 'allow' });
+    }
+    if (this.approvalMode === 'safe' && this.isReadOnlyTool(toolName)) {
+      return Promise.resolve({ behavior: 'allow' });
+    }
     const requestId = options.toolUseID;
     const { summary, detail } = describeTool(toolName, input);
     return new Promise<PermissionResult>((resolve) => {

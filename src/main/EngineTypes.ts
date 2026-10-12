@@ -1,4 +1,5 @@
 import { t } from './i18n';
+import type { ApprovalMode } from './config';
 
 export type TerminalLevel = 'info' | 'tool' | 'stderr' | 'hook' | 'result' | 'assistant' | 'thinking';
 
@@ -28,6 +29,8 @@ export interface EngineOptions {
   claudeExecutable?: string;
   /** Set only by the --dangerously-skip-permissions launch flag: no Freigabe-Karten at all. */
   skipPermissions?: boolean;
+  /** Approval mode ('ask' | 'safe' | 'bypass'). Defaults to 'safe' unless skipPermissions is set. */
+  approvalMode?: ApprovalMode;
   /** Models offered in the picker for engines that cannot list them themselves (agy, gpts). */
   availableModels?: string[];
   /** Reasoning effort (config.effort). */
