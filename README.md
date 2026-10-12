@@ -25,9 +25,11 @@ Agentic RAGs and AI CLI tools are incredibly powerful, but interacting with them
 2. Run `npm install`
 3. Run `npm start` to launch the app in development mode
 
-## ⚖️ License
+## ⚖️ License & Dual-Licensing
 
-This project is licensed under the **PolyForm Noncommercial License 1.0.0**. 
+Termi is free open-source software, licensed under the **GNU General Public License v3.0 (GPLv3)**.
 
-- **Free for Private Use:** You are completely free to use, modify, and share this software for personal, academic, or non-profit purposes. 
-- **Commercial Use:** If you intend to use this software in a commercial setting, to generate revenue, or within a company, you must purchase a commercial license. Please contact me to discuss commercial licensing.
+- **Community & Personal Use:** You are free to run, study, share, and modify Termi under the terms of the GPLv3. Any distributed modifications must also remain open source under the GPLv3.
+- **Contributions:** We welcome contributions! Contributing requires accepting our lightweight [Contributor License Agreement (CLA)](CLA.md).
+- **Commercial & Enterprise Licensing:** If you or your organization wish to integrate or distribute Termi without the copyleft obligations of the GPLv3 (e.g., in a proprietary corporate deployment or embedded within a closed-source solution), commercial licenses are available. Please get in touch to discuss options.
+
