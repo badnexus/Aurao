@@ -64,13 +64,14 @@
 
   // ---------- views ----------
   function showView(view) {
+    if (!view) return;
     state.view = view;
-    document.querySelectorAll('.nav').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
+    document.querySelectorAll('.nav[data-view]').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
     document.querySelectorAll('.view').forEach((v) => (v.hidden = v.id !== `view-${view}`));
     if (view === 'terminal') { state.unseenTerminal = 0; updateTerminalBadge(); }
     if (view === 'chat') $('input').focus();
   }
-  document.querySelectorAll('.nav').forEach((b) => b.addEventListener('click', () => showView(b.dataset.view)));
+  document.querySelectorAll('.nav[data-view]').forEach((b) => b.addEventListener('click', () => showView(b.dataset.view)));
 
   // ---------- status ----------
   function setStatus(cls, text) {
@@ -828,13 +829,167 @@
         addError(ev.text);
         setStatus('error', t('status.error'));
         setBusy(false);
+        if (/not found|nicht im PATH|keine aktive|start failed/i.test(ev.text)) {
+          setTimeout(openSettings, 400);
+        }
         break;
     }
   });
 
-  // Dev aids used by the screenshot mode (see main.ts).
-  api.onShowView((view) => showView(view));
-  api.onEchoUser((text) => { addUser(text); setBusy(true); showWorking(); });
+  // ---------- settings & diagnostics modal ----------
+  const settingsDialog = $('settings-dialog');
+  const openSettingsBtn = $('open-settings');
+  const settingsCloseBtn = $('settings-close');
+  const settingsCancelBtn = $('settings-cancel');
+  const settingsForm = $('settings-form');
+  const engineTypeSelect = $('cfg-engineType');
+  const agentNameInput = $('cfg-agentName');
+  const personaSelectCfg = $('cfg-persona');
+  const languageSelectCfg = $('cfg-language');
+  const approvalModeSelectCfg = $('cfg-approvalMode');
+  const greetOnStartCheckbox = $('cfg-greetOnStart');
+  const workspaceRootInput = $('cfg-workspaceRoot');
+  const workspaceRepoInput = $('cfg-workspaceRepo');
+  const workspaceGitUrlInput = $('cfg-workspaceGitUrl');
+  const modelInput = $('cfg-model');
+  const availableModelsInput = $('cfg-availableModels');
+  const effortSelect = $('cfg-effort');
+  const allowedToolsInput = $('cfg-allowedTools');
+  const claudeExecutableInput = $('cfg-claudeExecutable');
+  const chooseWorkspaceRootBtn = $('choose-workspaceRoot');
+  const chooseWorkspaceRepoBtn = $('choose-workspaceRepo');
+  const healthBox = $('health-box');
+  const healthMsg = $('health-msg');
+  const healthTip = $('health-tip');
+
+  async function runHealthCheck(engineType) {
+    if (!healthBox || !healthMsg) return;
+    const engine = engineType || (engineTypeSelect ? engineTypeSelect.value : 'agy');
+    healthBox.className = 'health-box';
+    healthMsg.textContent = t('settings.checking');
+    if (healthTip) {
+      healthTip.hidden = true;
+      healthTip.textContent = '';
+    }
+
+    try {
+      const res = await api.checkHealth(engine);
+      if (res && res.ok) {
+        healthBox.className = 'health-box ok';
+        healthMsg.textContent = res.message || 'Einsatzbereit';
+        if (healthTip) healthTip.hidden = true;
+      } else {
+        healthBox.className = 'health-box error';
+        healthMsg.textContent = (res && res.message) || 'Nicht bereit';
+        if (healthTip && res && res.tip) {
+          healthTip.textContent = res.tip;
+          healthTip.hidden = false;
+        }
+      }
+    } catch (err) {
+      healthBox.className = 'health-box error';
+      healthMsg.textContent = String(err);
+    }
+  }
+
+  async function openSettings() {
+    if (!settingsDialog) return;
+    const cfg = await api.getConfig();
+    if (engineTypeSelect) engineTypeSelect.value = cfg.engineType || 'agy';
+    if (agentNameInput) agentNameInput.value = cfg.agentName || 'Assistant';
+    if (personaSelectCfg) personaSelectCfg.value = cfg.persona || 'standard';
+    if (languageSelectCfg) languageSelectCfg.value = cfg.language || i18n.getLang() || 'de';
+    if (approvalModeSelectCfg) approvalModeSelectCfg.value = cfg.approvalMode || 'safe';
+    if (greetOnStartCheckbox) greetOnStartCheckbox.checked = Boolean(cfg.greetOnStart);
+    if (workspaceRootInput) workspaceRootInput.value = cfg.workspaceRoot || '';
+    if (workspaceRepoInput) workspaceRepoInput.value = cfg.workspaceRepo || '';
+    if (workspaceGitUrlInput) workspaceGitUrlInput.value = cfg.workspaceGitUrl || '';
+    if (modelInput) modelInput.value = cfg.model || '';
+    if (availableModelsInput) availableModelsInput.value = Array.isArray(cfg.availableModels) ? cfg.availableModels.join(', ') : '';
+    if (effortSelect) effortSelect.value = cfg.effort || '';
+    if (allowedToolsInput) allowedToolsInput.value = Array.isArray(cfg.allowedTools) ? cfg.allowedTools.join(', ') : '';
+    if (claudeExecutableInput) claudeExecutableInput.value = cfg.claudeExecutable || '';
+
+    if (settingsDialog.showModal) settingsDialog.showModal();
+    else settingsDialog.setAttribute('open', '');
+
+    await runHealthCheck(engineTypeSelect ? engineTypeSelect.value : 'agy');
+  }
+
+  function closeSettings() {
+    if (!settingsDialog) return;
+    if (settingsDialog.close) settingsDialog.close();
+    else settingsDialog.removeAttribute('open');
+  }
+
+  if (openSettingsBtn) openSettingsBtn.addEventListener('click', openSettings);
+  if (settingsCloseBtn) settingsCloseBtn.addEventListener('click', closeSettings);
+  if (settingsCancelBtn) settingsCancelBtn.addEventListener('click', closeSettings);
+
+  if (engineTypeSelect) {
+    engineTypeSelect.addEventListener('change', () => {
+      runHealthCheck(engineTypeSelect.value);
+    });
+  }
+
+  if (chooseWorkspaceRootBtn && workspaceRootInput) {
+    chooseWorkspaceRootBtn.addEventListener('click', async () => {
+      const picked = await api.chooseDir(workspaceRootInput.value, t('explorer.choose'));
+      if (picked) workspaceRootInput.value = picked;
+    });
+  }
+
+  if (chooseWorkspaceRepoBtn && workspaceRepoInput) {
+    chooseWorkspaceRepoBtn.addEventListener('click', async () => {
+      const picked = await api.chooseDir(workspaceRepoInput.value, t('explorer.choose'));
+      if (picked) workspaceRepoInput.value = picked;
+    });
+  }
+
+  if (settingsForm) {
+    settingsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const rawModels = availableModelsInput ? availableModelsInput.value.trim() : '';
+      const modelsArr = rawModels ? rawModels.split(',').map((s) => s.trim()).filter(Boolean) : undefined;
+      const rawTools = allowedToolsInput ? allowedToolsInput.value.trim() : '';
+      const toolsArr = rawTools ? rawTools.split(',').map((s) => s.trim()).filter(Boolean) : undefined;
+
+      const newCfg = {
+        engineType: engineTypeSelect ? engineTypeSelect.value : 'agy',
+        agentName: (agentNameInput ? agentNameInput.value.trim() : '') || 'Assistant',
+        persona: personaSelectCfg ? personaSelectCfg.value : 'standard',
+        language: languageSelectCfg ? languageSelectCfg.value : 'de',
+        approvalMode: approvalModeSelectCfg ? approvalModeSelectCfg.value : 'safe',
+        greetOnStart: greetOnStartCheckbox ? greetOnStartCheckbox.checked : false,
+        workspaceRoot: (workspaceRootInput ? workspaceRootInput.value.trim() : '') || undefined,
+        workspaceRepo: (workspaceRepoInput ? workspaceRepoInput.value.trim() : '') || undefined,
+        workspaceGitUrl: (workspaceGitUrlInput ? workspaceGitUrlInput.value.trim() : '') || undefined,
+        model: (modelInput ? modelInput.value.trim() : '') || undefined,
+        availableModels: modelsArr,
+        effort: (effortSelect ? effortSelect.value : '') || undefined,
+        allowedTools: toolsArr,
+        claudeExecutable: (claudeExecutableInput ? claudeExecutableInput.value.trim() : '') || undefined,
+      };
+
+      closeSettings();
+      termLine(t('settings.saved'), 'info');
+
+      const updated = await api.saveAllConfig(newCfg);
+      state.agentName = updated.agentName || 'Assistant';
+      document.title = state.agentName;
+      const brandTitle = document.querySelector('.brand-title');
+      if (brandTitle) brandTitle.textContent = state.agentName;
+
+      if (updated.language && updated.language !== i18n.getLang()) {
+        i18n.setLang(updated.language);
+        if (languageSelect) languageSelect.value = updated.language;
+        translateUI();
+      }
+      if (personaSelect) personaSelect.value = updated.persona || 'standard';
+      updateApprovalsUI(updated.approvalMode || 'safe');
+      if (updated.workspaceRoot) renderDir(updated.workspaceRoot);
+    });
+  }
 
   // ---------- boot ----------
   (async () => {

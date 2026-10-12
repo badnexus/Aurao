@@ -494,7 +494,7 @@ export function parseAgyModels(stdout: string): ModelChoice[] {
 }
 
 /** Locate a command the way the shell would (PATH × PATHEXT on Windows). */
-function findOnPath(cmd: string): string | null {
+export function findOnPath(cmd: string): string | null {
   const dirs = (process.env.PATH ?? '').split(path.delimiter).filter(Boolean);
   const exts = process.platform === 'win32' ? (process.env.PATHEXT ?? '.EXE;.CMD;.BAT').split(';').filter(Boolean) : [''];
   for (const dir of dirs) {

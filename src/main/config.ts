@@ -83,12 +83,22 @@ function readJson(file: string): Partial<PocConfig> | null {
   }
 }
 
-/**
- * What users change in the app themselves (persona, DE|EN, model picker, folder picker). In the packaged app only
- * these are kept in the user's config.json, and only where they differ from the bundled config; everything else
- * always comes from the bundled config, so a new release (model, effort, allowedTools …) reaches every user.
- */
-const USER_KEYS = ['persona', 'language', 'model', 'workspaceRoot', 'approvalMode'] as const;
+export const USER_KEYS = [
+  'engineType',
+  'agentName',
+  'workspaceRepo',
+  'workspaceGitUrl',
+  'workspaceRoot',
+  'greetOnStart',
+  'persona',
+  'language',
+  'approvalMode',
+  'model',
+  'availableModels',
+  'allowedTools',
+  'effort',
+  'claudeExecutable',
+] as const;
 
 function userOverrides(cfg: Partial<PocConfig>, bundled: Partial<PocConfig>): Partial<PocConfig> {
   const out: Record<string, unknown> = {};
@@ -116,10 +126,12 @@ export function loadConfig(): PocConfig {
   if (typeof cfg.agentName !== 'string' || !cfg.agentName.trim()) cfg.agentName = DEFAULTS.agentName;
   if (typeof cfg.workspaceRepo !== 'string') cfg.workspaceRepo = DEFAULTS.workspaceRepo;
   if (typeof cfg.workspaceRoot !== 'string') cfg.workspaceRoot = DEFAULTS.workspaceRoot;
+  if (typeof cfg.greetOnStart !== 'boolean') cfg.greetOnStart = DEFAULTS.greetOnStart;
   if (cfg.workspaceGitUrl !== undefined && (typeof cfg.workspaceGitUrl !== 'string' || !cfg.workspaceGitUrl.trim())) delete cfg.workspaceGitUrl;
   if (cfg.availableModels !== undefined && !Array.isArray(cfg.availableModels)) delete cfg.availableModels;
   if (cfg.effort !== undefined && !EFFORTS.includes(cfg.effort)) delete cfg.effort;
   if (cfg.allowedTools !== undefined && !(Array.isArray(cfg.allowedTools) && cfg.allowedTools.every((r) => typeof r === 'string'))) delete cfg.allowedTools;
+  if (cfg.claudeExecutable !== undefined && (typeof cfg.claudeExecutable !== 'string' || !cfg.claudeExecutable.trim())) delete cfg.claudeExecutable;
   return cfg;
 }
 

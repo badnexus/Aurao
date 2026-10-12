@@ -43,6 +43,7 @@
         </select>
       </label>
       <div class="status" id="status"><span class="dot"></span><span id="status-text" data-i18n="status.starting">Engine startet …</span></div>
+      <button class="topbar-btn ghost" id="open-settings" title="Einstellungen & Diagnose" data-i18n="settings.btn">⚙️</button>
     </div>
   </header>
   <div class="danger-banner" id="skip-banner" hidden data-i18n="banner.danger">⚠ Freigaben deaktiviert – Aktionen werden ohne Rückfrage ausgeführt.</div>
@@ -100,6 +101,150 @@
       <div class="explorer-hint" data-i18n="hint.explorer">Ziehe eine Datei oder einen Ordner in den Chat – der Pfad wird automatisch eingesetzt.</div>
     </aside>
   </div>
+
+  <!-- Settings Modal Dialog -->
+  <dialog class="modal-dialog" id="settings-dialog">
+    <div class="modal-content">
+      <div class="modal-head">
+        <div class="modal-title" data-i18n="settings.title">⚙️ Einstellungen &amp; Diagnose</div>
+        <button type="button" class="modal-close" id="settings-close" title="Schließen">✕</button>
+      </div>
+
+      <form class="modal-body" id="settings-form" method="dialog">
+        <!-- 1. Engine & Diagnose -->
+        <fieldset class="settings-group">
+          <legend class="settings-legend" data-i18n="settings.group_engine">1. Engine &amp; System-Diagnose</legend>
+          
+          <div class="form-row">
+            <label for="cfg-engineType" data-i18n="settings.engineType">Backend-Engine</label>
+            <select id="cfg-engineType" name="engineType">
+              <option value="agy">Google Antigravity CLI (agy)</option>
+              <option value="claude">Claude Agent SDK (claude)</option>
+              <option value="gpts">GPTS Engine (gpts)</option>
+            </select>
+          </div>
+
+          <div class="health-box" id="health-box">
+            <div class="health-status">
+              <span class="health-dot" id="health-dot"></span>
+              <span class="health-msg" id="health-msg">Diagnose läuft …</span>
+            </div>
+            <div class="health-tip" id="health-tip" hidden></div>
+          </div>
+        </fieldset>
+
+        <!-- 2. Allgemein & Verhalten -->
+        <fieldset class="settings-group">
+          <legend class="settings-legend" data-i18n="settings.group_general">2. Allgemein &amp; Verhalten</legend>
+
+          <div class="form-row">
+            <label for="cfg-agentName" data-i18n="settings.agentName">Name des Assistenten</label>
+            <input type="text" id="cfg-agentName" name="agentName" placeholder="Assistant" />
+          </div>
+
+          <div class="form-row">
+            <label for="cfg-persona" data-i18n="persona.label">Ansprache</label>
+            <select id="cfg-persona" name="persona">
+              <option value="standard" data-i18n="persona.standard">Standard</option>
+              <option value="soft" data-i18n="persona.soft">Einfach</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label for="cfg-language" data-i18n="lang.label">Sprache</label>
+            <select id="cfg-language" name="language">
+              <option value="de">Deutsch (DE)</option>
+              <option value="en">English (EN)</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label for="cfg-approvalMode" data-i18n="approvals.label">Freigabestufe</label>
+            <select id="cfg-approvalMode" name="approvalMode">
+              <option value="safe" data-i18n="approvals.safe">Nur Änderungen (Standard)</option>
+              <option value="ask" data-i18n="approvals.ask">Mit Freigabe (Jede Aktion)</option>
+              <option value="bypass" data-i18n="approvals.bypass">Ohne Freigabe (Autopilot)</option>
+            </select>
+          </div>
+
+          <div class="form-row checkbox-row">
+            <label class="checkbox-label">
+              <input type="checkbox" id="cfg-greetOnStart" name="greetOnStart" />
+              <span data-i18n="settings.greetOnStart">Assistent begrüßt automatisch beim Start</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- 3. Pfade & Workspace -->
+        <fieldset class="settings-group">
+          <legend class="settings-legend" data-i18n="settings.group_paths">3. Pfade &amp; Arbeitsbereich</legend>
+
+          <div class="form-row">
+            <label for="cfg-workspaceRoot" data-i18n="settings.workspaceRoot">Explorer-Startordner</label>
+            <div class="input-with-btn">
+              <input type="text" id="cfg-workspaceRoot" name="workspaceRoot" />
+              <button type="button" class="ghost" id="choose-workspaceRoot" data-i18n="explorer.choose">Ordner …</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label for="cfg-workspaceRepo" data-i18n="settings.workspaceRepo">Skills-Verzeichnis</label>
+            <div class="input-with-btn">
+              <input type="text" id="cfg-workspaceRepo" name="workspaceRepo" />
+              <button type="button" class="ghost" id="choose-workspaceRepo" data-i18n="explorer.choose">Ordner …</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label for="cfg-workspaceGitUrl" data-i18n="settings.workspaceGitUrl">Workspace Git-URL (optional)</label>
+            <input type="text" id="cfg-workspaceGitUrl" name="workspaceGitUrl" placeholder="https://github.com/..." />
+          </div>
+        </fieldset>
+
+        <!-- 4. Erweitert & Modell-Parameter -->
+        <fieldset class="settings-group">
+          <legend class="settings-legend" data-i18n="settings.group_advanced">4. Erweitert &amp; Modell-Parameter</legend>
+
+          <div class="form-row">
+            <label for="cfg-model" data-i18n="settings.modelOverride">Modell-Override (optional)</label>
+            <input type="text" id="cfg-model" name="model" placeholder="Standard-Modell der Engine nutzen" />
+          </div>
+
+          <div class="form-row">
+            <label for="cfg-availableModels" data-i18n="settings.availableModels">Verfügbare Modelle (kommagetrennt)</label>
+            <input type="text" id="cfg-availableModels" name="availableModels" placeholder="z. B. model-1, model-2" />
+          </div>
+
+          <div class="form-row">
+            <label for="cfg-effort" data-i18n="settings.effort">Denk-Aufwand (Effort, Claude)</label>
+            <select id="cfg-effort" name="effort">
+              <option value="">(Standard des Modells)</option>
+              <option value="low">low (Schnell)</option>
+              <option value="medium">medium (Ausgewogen)</option>
+              <option value="high">high (Gründlich)</option>
+              <option value="xhigh">xhigh (Sehr gründlich)</option>
+              <option value="max">max (Maximales Denken)</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label for="cfg-allowedTools" data-i18n="settings.allowedTools">Erlaubte Tools ohne Freigabekarte (kommagetrennt)</label>
+            <input type="text" id="cfg-allowedTools" name="allowedTools" placeholder="z. B. Bash(npm test)" />
+          </div>
+
+          <div class="form-row">
+            <label for="cfg-claudeExecutable" data-i18n="settings.claudeExecutable">Pfad zu claude.exe (optional)</label>
+            <input type="text" id="cfg-claudeExecutable" name="claudeExecutable" placeholder="Leer lassen für SDK-Standard" />
+          </div>
+        </fieldset>
+
+        <div class="modal-foot">
+          <button type="button" class="ghost" id="settings-cancel" data-i18n="settings.cancel">Abbrechen</button>
+          <button type="submit" class="btn primary" id="settings-save" data-i18n="settings.save">Speichern &amp; Übernehmen</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
 
   <script src="vendor/marked.umd.js"></script>
   <script src="refs.js"></script>

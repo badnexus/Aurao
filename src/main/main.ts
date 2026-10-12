@@ -6,7 +6,7 @@ import { loadConfig, saveConfig, configIsBroken, configPath, POC_ROOT, type PocC
 import type { EngineEvent } from './EngineTypes';
 import type { IEngine } from './IEngine';
 import { ClaudeEngine } from './ClaudeEngine';
-import { AgyEngine } from './AgyEngine';
+import { AgyEngine, findOnPath } from './AgyEngine';
 import { GptsEngine } from './GptsEngine';
 import { listWorkspaceSkills } from './skills';
 import { syncWorkspace } from './workspace';
@@ -212,6 +212,101 @@ function createWindow(): void {
   }
 }
 
+function checkAgyHealth(): { ok: boolean; path?: string; message: string; tip?: string } {
+  const exe = findOnPath('agy');
+  if (exe) {
+    return { ok: true, path: exe, message: `Google Antigravity CLI gefunden: ${exe}` };
+  }
+  return {
+    ok: false,
+    message: 'agy wurde nicht im PATH gefunden.',
+    tip: 'Bitte installiere die Google Antigravity CLI im Terminal per "npm install -g antigravity-cli" oder füge ihren Pfad zum Windows-PATH hinzu.',
+  };
+}
+
+function checkClaudeHealth(): { ok: boolean; provider: string; message: string; tip?: string } {
+  // 1. Microsoft Foundry
+  const isFoundry =
+    process.env.CLAUDE_CODE_USE_FOUNDRY === '1' ||
+    Boolean(process.env.ANTHROPIC_FOUNDRY_RESOURCE) ||
+    Boolean(process.env.ANTHROPIC_FOUNDRY_BASE_URL) ||
+    Boolean(process.env.ANTHROPIC_BASE_URL?.toLowerCase().includes('azure')) ||
+    Boolean(process.env.AZURE_AI_API_KEY) ||
+    Boolean(process.env.FOUNDRY_API_KEY);
+
+  if (isFoundry) {
+    const res = process.env.ANTHROPIC_FOUNDRY_RESOURCE || 'Microsoft Azure AI Foundry';
+    return {
+      ok: true,
+      provider: 'foundry',
+      message: `Bereit via Microsoft Foundry (${res})`,
+    };
+  }
+
+  // 2. AWS Bedrock
+  const isBedrock =
+    process.env.CLAUDE_CODE_USE_BEDROCK === '1' ||
+    Boolean(process.env.AWS_PROFILE) ||
+    Boolean(process.env.AWS_ACCESS_KEY_ID);
+
+  if (isBedrock) {
+    const reg = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'Standard-Region';
+    return {
+      ok: true,
+      provider: 'bedrock',
+      message: `Bereit via AWS Bedrock (${reg})`,
+    };
+  }
+
+  // 3. Google Cloud Vertex AI
+  const isVertex =
+    process.env.CLAUDE_CODE_USE_VERTEX === '1' ||
+    Boolean(process.env.ANTHROPIC_VERTEX_PROJECT_ID) ||
+    Boolean(process.env.CLOUD_ML_REGION);
+
+  if (isVertex) {
+    const prj = process.env.ANTHROPIC_VERTEX_PROJECT_ID || 'GCP Vertex';
+    return {
+      ok: true,
+      provider: 'vertex',
+      message: `Bereit via Google Cloud Vertex AI (${prj})`,
+    };
+  }
+
+  // 4. Direct Anthropic API Key or Auth Token
+  if (Boolean(process.env.ANTHROPIC_API_KEY) || Boolean(process.env.ANTHROPIC_AUTH_TOKEN)) {
+    return {
+      ok: true,
+      provider: 'anthropic',
+      message: 'Bereit via Anthropic API (Direktverbindung / API-Key)',
+    };
+  }
+
+  // 5. Claude CLI Login file in user home (~/.claude.json)
+  const claudeJson = path.join(app.getPath('home'), '.claude.json');
+  if (fs.existsSync(claudeJson)) {
+    try {
+      const content = fs.readFileSync(claudeJson, 'utf8');
+      if (content.includes('oauth') || content.includes('token') || content.includes('primaryApiKey')) {
+        return {
+          ok: true,
+          provider: 'anthropic',
+          message: 'Bereit via Claude CLI Login (~/.claude.json)',
+        };
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return {
+    ok: false,
+    provider: 'none',
+    message: 'Keine aktive Claude-Authentifizierung im System gefunden.',
+    tip: 'Hinweise zur Einrichtung je nach Umgebung:\n• Microsoft Foundry: Setze CLAUDE_CODE_USE_FOUNDRY=1 und ANTHROPIC_FOUNDRY_RESOURCE in den Windows-Umgebungsvariablen oder melde dich per az login an.\n• Anthropic direkt: Führe im Terminal "claude login" aus oder setze ANTHROPIC_API_KEY.\n• AWS / GCP: Setze CLAUDE_CODE_USE_BEDROCK=1 bzw. CLAUDE_CODE_USE_VERTEX=1.',
+  };
+}
+
 // --- IPC: everything the renderer may ask for --------------------------------------------
 
 ipcMain.handle('config:get', () => ({
@@ -220,6 +315,40 @@ ipcMain.handle('config:get', () => ({
   language: getLanguage(),
   runtime: { skipPermissions: SKIP_PERMISSIONS, configPath: configPath() },
 }));
+ipcMain.handle('system:checkHealth', (_e, engineType?: string) => {
+  const engine = engineType || cfg.engineType;
+  if (engine === 'agy') return { engine: 'agy', ...checkAgyHealth() };
+  if (engine === 'claude') return { engine: 'claude', ...checkClaudeHealth() };
+  return { engine: 'gpts', ok: true, message: 'GPTS Engine (Vorbereitet)' };
+});
+ipcMain.handle('config:saveAll', async (_e, newValues: Partial<PocConfig>) => {
+  const oldEngine = cfg.engineType;
+  const oldModel = cfg.model;
+  const oldRepo = cfg.workspaceRepo;
+  const oldRoot = cfg.workspaceRoot;
+  const oldPersona = cfg.persona;
+  const oldName = cfg.agentName;
+
+  cfg = { ...cfg, ...newValues };
+  persist();
+
+  if (cfg.agentName !== oldName && win) {
+    win.setTitle(t('window.title', { agent: cfg.agentName }));
+  }
+
+  const needsRestart =
+    cfg.engineType !== oldEngine ||
+    cfg.model !== oldModel ||
+    cfg.workspaceRepo !== oldRepo ||
+    cfg.workspaceRoot !== oldRoot ||
+    cfg.persona !== oldPersona;
+
+  if (needsRestart) {
+    await restartEngine();
+  }
+
+  return cfg;
+});
 ipcMain.handle('skills:list', () => listWorkspaceSkills(cfg.workspaceRepo));
 ipcMain.handle('files:list', (_e, dir?: string) => listDir(dir || cfg.workspaceRoot));
 ipcMain.handle('files:stat', (_e, p: string) => statPath(p));
@@ -230,6 +359,16 @@ ipcMain.handle('files:chooseFolder', async () => {
   cfg = { ...cfg, workspaceRoot: r.filePaths[0] };
   persist();
   return cfg.workspaceRoot;
+});
+ipcMain.handle('files:chooseDir', async (_e, initialPath?: string, title?: string) => {
+  if (!win) return null;
+  const r = await dialog.showOpenDialog(win, {
+    properties: ['openDirectory'],
+    defaultPath: initialPath || cfg.workspaceRoot || app.getPath('documents'),
+    title: title || t('dialog.chooseFolder'),
+  });
+  if (r.canceled || r.filePaths.length === 0) return null;
+  return r.filePaths[0];
 });
 ipcMain.handle('shell:openPath', (_e, p: string) => shell.openPath(p));
 ipcMain.handle('shell:reveal', (_e, p: string) => shell.showItemInFolder(p));
