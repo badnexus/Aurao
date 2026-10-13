@@ -46,8 +46,8 @@
       "target": "portable"
     },
     "portable": {
-      "artifactName": "TerminalBuddy-${version}-portable.exe",
-      "unpackDirName": "TerminalBuddy"
+      "artifactName": "Termi-${version}-portable.exe",
+      "unpackDirName": "Termi"
     }
   },
   "private": "true"
