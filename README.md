@@ -5,7 +5,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-7.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)]()
 
-<img width="3768" height="1977" alt="Termi Interface" src="https://github.com/user-attachments/assets/c6f1568c-21a0-4304-a43f-b4fa438a5d62" />
+<img width="100%" alt="Termi Assistant Interface" src="assets/Termi_Assistant.png" />
 
 **Termi** bridges the gap between powerful developer CLI agents and everyday desktop users. It wraps autonomous command-line agent frameworks—such as the **Google Antigravity CLI (`agy`)** and the **Anthropic Claude Agent SDK**—in a friendly, cozy chat window featuring human-in-the-loop safety cards, native drag-and-drop, and an optional jargon-free persona.
 
@@ -41,6 +41,12 @@ Termi solves this by providing:
 - ⚙️ **In-App Settings & Multi-Provider Diagnostics:** Full visual configuration for engines, models, reasoning effort, allowed tools, and workspace paths. Includes an automated health-check diagnostic modal for Google Antigravity (`agy`), Claude Agent SDK, and cloud providers.
 - 🔌 **Dual-Engine Architecture:** Pluggable engine layer supporting both Google Antigravity (`agy`) and the Anthropic Claude Agent SDK.
 - 🌐 **Bilingual (DE / EN):** Full user interface localization in English and German.
+
+### 🤖 In Action: Custom Personas & Agent Orchestration
+
+<img width="100%" alt="Bob-branded Termi Agent Orchestrator" src="assets/Bob_branded_Termi_Agent_Orchestrator.png" />
+
+*Termi in action configured as a custom agent orchestrator ("Bob") — managing autonomous workflows with visual approval cards, chat history, and plain-language desktop personas.*
 
 ---
 
