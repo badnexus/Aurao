@@ -29,6 +29,8 @@ export interface EngineOptions {
   claudeExecutable?: string;
   /** Set only by the --dangerously-skip-permissions launch flag: no Freigabe-Karten at all. */
   skipPermissions?: boolean;
+  /** True only when the app was started with --dangerously-skip-permissions (not when bypass was picked in the UI). */
+  launchedWithSkipFlag?: boolean;
   /** Approval mode ('ask' | 'safe' | 'bypass'). Defaults to 'safe' unless skipPermissions is set. */
   approvalMode?: ApprovalMode;
   /** Models offered in the picker for engines that cannot list them themselves (agy, gpts). */

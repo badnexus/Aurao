@@ -54,7 +54,7 @@ export class AgyEngine extends EventEmitter implements IEngine {
     args.push('--dangerously-skip-permissions');
     await this.setupHookServer();
     if (this.approvalMode === 'bypass') {
-      this.emitEvent({ kind: 'terminal', line: t('engine.skipWarning'), level: 'stderr' });
+      this.emitEvent({ kind: 'terminal', line: t(this.opts.launchedWithSkipFlag ? 'engine.skipWarning' : 'engine.bypassWarning'), level: 'stderr' });
     }
     if (this.opts.resumeConversationId) {
       if (!SAFE_ARG.test(this.opts.resumeConversationId)) {

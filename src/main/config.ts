@@ -102,7 +102,10 @@ export const USER_KEYS = [
 
 function userOverrides(cfg: Partial<PocConfig>, bundled: Partial<PocConfig>): Partial<PocConfig> {
   const out: Record<string, unknown> = {};
-  for (const k of USER_KEYS) if (cfg[k] !== undefined && cfg[k] !== bundled[k]) out[k] = cfg[k];
+  // Compare by content: lists (allowedTools, availableModels) are never `===` to the bundled ones, so they
+  // were always saved and then froze the user on that release's list.
+  const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+  for (const k of USER_KEYS) if (cfg[k] !== undefined && !same(cfg[k], bundled[k])) out[k] = cfg[k];
   return out as Partial<PocConfig>;
 }
 

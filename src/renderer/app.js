@@ -744,7 +744,12 @@
     const isBypass = mode === 'bypass';
     document.body.classList.toggle('skip-perms', isBypass);
     const banner = $('skip-banner');
-    if (banner) banner.hidden = !isBypass;
+    if (banner) {
+      banner.hidden = !isBypass;
+      // Name the launch flag only when the app was really started with it; otherwise bypass was picked here.
+      banner.dataset.i18n = state.launchedWithSkip ? 'banner.danger' : 'banner.bypass';
+      banner.textContent = t(banner.dataset.i18n);
+    }
     const hint = document.querySelector('.hint');
     if (hint) {
       hint.dataset.i18n = isBypass ? 'hint.danger' : 'hint.main';
@@ -1210,7 +1215,8 @@
     if (brandTitle) brandTitle.textContent = state.agentName;
 
     state.configuredModel = cfg.model || '';
-    const initialApprovalMode = cfg.approvalMode || (cfg.runtime && cfg.runtime.skipPermissions ? 'bypass' : 'safe');
+    state.launchedWithSkip = Boolean(cfg.runtime && cfg.runtime.skipPermissions);
+    const initialApprovalMode = cfg.approvalMode || (state.launchedWithSkip ? 'bypass' : 'safe');
     updateApprovalsUI(initialApprovalMode);
 
     if (cfg.language) i18n.setLang(cfg.language);

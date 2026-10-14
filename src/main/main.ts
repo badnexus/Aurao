@@ -82,6 +82,7 @@ function createEngine(): IEngine {
     model: cfg.model,
     agentName: cfg.agentName,
     skipPermissions: SKIP_PERMISSIONS || effectiveApprovalMode === 'bypass',
+    launchedWithSkipFlag: SKIP_PERMISSIONS,
     approvalMode: effectiveApprovalMode,
     availableModels: cfg.availableModels,
     resumeConversationId: currentConversationId || undefined,
