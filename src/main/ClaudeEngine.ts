@@ -104,7 +104,7 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
       ...(this.opts.continueLatest ? { continue: true } : {}),
     };
     this.emitEvent({ kind: 'terminal', line: t('engine.starting', { agent: this.opts.agentName || 'Agent', cwd: this.opts.cwd }), level: 'info' });
-    if (this.approvalMode === 'bypass') this.emitEvent({ kind: 'terminal', line: t('engine.skipWarning'), level: 'stderr' });
+    if (this.approvalMode === 'bypass') this.emitEvent({ kind: 'terminal', line: t(this.opts.launchedWithSkipFlag ? 'engine.skipWarning' : 'engine.bypassWarning'), level: 'stderr' });
     this.query = sdk.query({ prompt: this.queue, options });
     void this.consume(this.query);
     // The CLI sends its 'init' message only with the first answer, so the UI would wait forever
