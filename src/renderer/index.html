@@ -259,6 +259,13 @@
             <label for="cfg-claudeExecutable" data-i18n="settings.claudeExecutable">Pfad zu claude.exe (optional)</label>
             <input type="text" id="cfg-claudeExecutable" name="claudeExecutable" placeholder="Leer lassen für SDK-Standard" />
           </div>
+
+          <div class="form-row">
+            <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="cfg-sanitizeLogs" name="sanitizeLogs" checked />
+              <span data-i18n="settings.sanitizeLogs">Terminal-Ausgaben für KI-Modell bereinigen &amp; kürzen (Token-Optimierung)</span>
+            </label>
+          </div>
         </fieldset>
 
         <div class="modal-foot">

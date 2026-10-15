@@ -11,6 +11,8 @@ import type { IEngine } from './IEngine';
 import { assistantTerminalLines, describeTool, summarizeToolResult } from './EngineTypes';
 import type { ApprovalMode } from './config';
 import { t } from './i18n';
+import { StreamAccumulator } from './StreamAccumulator';
+import { sanitizeForLlm } from './LogSanitizer';
 import type {
   CanUseTool,
   Options,
@@ -69,6 +71,13 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
   private turnActive = false;
   private approvalMode: ApprovalMode = 'safe';
 
+  private stderrAccumulator = new StreamAccumulator((chunk) => {
+    this.emitEvent({ kind: 'terminal_chunk', chunk, level: 'stderr' });
+    for (const line of chunk.split(/\r?\n/).filter((l) => l.trim())) {
+      this.emitEvent({ kind: 'terminal', line, level: 'stderr' });
+    }
+  }, 60);
+
   constructor(private readonly opts: EngineOptions) {
     super();
     this.approvalMode = opts.approvalMode ?? (opts.skipPermissions ? 'bypass' : 'safe');
@@ -93,9 +102,7 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
       env: { ...process.env, TERMI_SURFACE: 'termi', TERMI_LANGUAGE: this.opts.language ?? 'en' },
       systemPrompt: { type: 'preset', preset: 'claude_code', append: this.opts.systemPromptAppend },
       stderr: (data: string) => {
-        for (const line of data.split(/\r?\n/)) {
-          if (line.trim()) this.emitEvent({ kind: 'terminal', line, level: 'stderr' });
-        }
+        this.stderrAccumulator.add(data);
       },
       ...(this.opts.model ? { model: this.opts.model } : {}),
       ...(this.opts.effort ? { effort: this.opts.effort } : {}),
@@ -118,7 +125,8 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
   send(text: string): void {
     this.turnActive = true;
     this.emitEvent({ kind: 'terminal', line: `> ${text.replace(/\s+/g, ' ').slice(0, 200)}`, level: 'info' });
-    this.queue.push({ type: 'user', message: { role: 'user', content: text }, parent_tool_use_id: null });
+    const sanitized = sanitizeForLlm(text, this.opts.sanitizeLogs !== false);
+    this.queue.push({ type: 'user', message: { role: 'user', content: sanitized }, parent_tool_use_id: null });
   }
 
   async interrupt(): Promise<void> {
@@ -173,6 +181,7 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
       this.pending.delete(id);
     }
     this.queue.close();
+    this.stderrAccumulator.dispose();
     try {
       await this.query?.interrupt();
     } catch {

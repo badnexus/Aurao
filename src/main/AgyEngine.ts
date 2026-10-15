@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import { spawn, execFile, type ChildProcess } from 'node:child_process';
+import { spawn, type ChildProcess } from 'node:child_process';
 import * as http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import * as fs from 'node:fs';
@@ -9,6 +9,8 @@ import type { EngineEvent, EngineOptions, ModelChoice } from './EngineTypes';
 import { assistantTerminalLines, describeTool } from './EngineTypes';
 import type { ApprovalMode } from './config';
 import { t } from './i18n';
+import { StreamAccumulator } from './StreamAccumulator';
+import { sanitizeForLlm } from './LogSanitizer';
 
 export class AgyEngine extends EventEmitter implements IEngine {
   private stopped = false;
@@ -22,6 +24,13 @@ export class AgyEngine extends EventEmitter implements IEngine {
   private turnOpen = false;
   private exited = false;
   readonly restartOnInterrupt = true;
+
+  private stderrAccumulator = new StreamAccumulator((chunk) => {
+    this.emitEvent({ kind: 'terminal_chunk', chunk, level: 'stderr' });
+    for (const line of chunk.split(/\r?\n/).filter((l) => l.trim())) {
+      this.emitEvent({ kind: 'terminal', line, level: 'stderr' });
+    }
+  }, 60);
 
   private hookServer: http.Server | null = null;
   private hookPort = 0;
@@ -99,13 +108,12 @@ export class AgyEngine extends EventEmitter implements IEngine {
     });
 
     this.proc.stderr?.on('data', (data: Buffer) => {
-      for (const line of data.toString().split(/\r?\n/).filter((l) => l.trim())) {
-        this.emitEvent({ kind: 'terminal', line, level: 'stderr' });
-      }
+      this.stderrAccumulator.add(data.toString());
     });
 
     this.proc.on('close', (code) => {
       this.exited = true;
+      this.stderrAccumulator.flush();
       if (this.stdoutRest) this.handleLine(this.stdoutRest);
       this.stdoutRest = '';
       this.emitEvent({ kind: 'status', text: t('agy.exited', { code: String(code) }) });
@@ -220,13 +228,15 @@ export class AgyEngine extends EventEmitter implements IEngine {
       this.hookServer = null;
     }
     this.cleanUpHookFiles();
+    this.stderrAccumulator.dispose();
     this.proc?.kill();
     this.removeAllListeners();
   }
 
   send(text: string): void {
     this.emitEvent({ kind: 'terminal', line: `> ${text.replace(/\s+/g, ' ').slice(0, 200)}`, level: 'info' });
-    if (this.write({ event: 'user', message: { content: text } })) this.turnOpen = true;
+    const sanitized = sanitizeForLlm(text, this.opts.sanitizeLogs !== false);
+    if (this.write({ event: 'user', message: { content: sanitized } })) this.turnOpen = true;
     else {
       this.emitEvent({ kind: 'error', text: t('agy.notRunning') });
     }
@@ -460,18 +470,35 @@ try {
     const exe = findOnPath('agy');
     if (!exe) return Promise.resolve([]);
     return new Promise((resolve) => {
-      const cb = (err: Error | null, stdout: string) => {
-        if (err) {
-          this.emitEvent({ kind: 'terminal', line: t('agy.modelListFailed', { e: String(err) }), level: 'stderr' });
+      const child = /\.(cmd|bat)$/i.test(exe)
+        ? spawn(`"${exe}" models`, { cwd: this.opts.cwd, shell: true, windowsHide: true })
+        : spawn(exe, ['models'], { cwd: this.opts.cwd, windowsHide: true });
+
+      let stdout = '';
+      const timer: NodeJS.Timeout | null = setTimeout(() => {
+        child.kill();
+        resolve([]);
+      }, 15000);
+
+      child.stdout?.on('data', (d: Buffer) => {
+        stdout += d.toString();
+      });
+
+      child.on('error', (err) => {
+        clearTimeout(timer);
+        this.emitEvent({ kind: 'terminal', line: t('agy.modelListFailed', { e: String(err) }), level: 'stderr' });
+        resolve([]);
+      });
+
+      child.on('close', (code) => {
+        clearTimeout(timer);
+        if (code !== 0 && !stdout) {
           resolve([]);
           return;
         }
         this.modelCache = parseAgyModels(stdout);
         resolve(this.modelCache);
-      };
-      const opts = { cwd: this.opts.cwd, timeout: 15000, windowsHide: true };
-      if (/\.(cmd|bat)$/i.test(exe)) execFile(`"${exe}" models`, [], { ...opts, shell: true }, (e, out) => cb(e, String(out)));
-      else execFile(exe, ['models'], opts, (e, out) => cb(e, String(out)));
+      });
     });
   }
 

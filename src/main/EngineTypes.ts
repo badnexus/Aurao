@@ -18,6 +18,7 @@ export type EngineEvent =
   | { kind: 'permission_resolved'; requestId: string; allowed: boolean }
   | { kind: 'result'; costUsd: number; durationMs: number; numTurns: number; isError: boolean }
   | { kind: 'terminal'; line: string; level: TerminalLevel }
+  | { kind: 'terminal_chunk'; chunk: string; level?: TerminalLevel }
   | { kind: 'status'; text: string }
   | { kind: 'error'; text: string };
 
@@ -45,6 +46,8 @@ export interface EngineOptions {
   resumeConversationId?: string;
   /** Continue the most recent conversation automatically. */
   continueLatest?: boolean;
+  /** Whether terminal log sanitization and middle-out truncation are enabled. */
+  sanitizeLogs?: boolean;
 }
 
 export interface HistoricalMessage {

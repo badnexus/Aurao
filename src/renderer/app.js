@@ -15,8 +15,8 @@
       const key = el.dataset.i18n;
       if (el.dataset.placeholder !== undefined) {
         el.dataset.placeholder = t(key, vars);
-      } else if (el.id === 'send') {
-        el.title = t(key, vars); // keep the ➤ icon, only translate the tooltip
+      } else if (el.id === 'send' || el.id === 'open-settings') {
+        el.title = t(key, vars); // keep the icon, only translate the tooltip
       } else {
         el.textContent = t(key, vars);
       }
@@ -268,6 +268,22 @@
     b.hidden = state.unseenTerminal === 0;
     b.textContent = state.unseenTerminal > 99 ? '99+' : String(state.unseenTerminal);
   }
+
+  function termStreamChunk(chunk, level = 'stderr') {
+    if (!chunk) return;
+    let last = terminal.lastElementChild;
+    if (!last || !last.classList.contains('t-chunk') || !last.classList.contains(`t-${level}`)) {
+      last = document.createElement('span');
+      last.className = `t-chunk t-${level}`;
+      last.innerHTML = `<span class="t-time">${now()} </span>`;
+      terminal.appendChild(last);
+    }
+    last.appendChild(document.createTextNode(chunk));
+    while (terminal.childElementCount > TERMINAL_MAX_LINES) terminal.firstElementChild.remove();
+    if (termPinned) terminal.scrollTop = terminal.scrollHeight;
+    if (state.view !== 'terminal') { state.unseenTerminal++; updateTerminalBadge(); }
+  }
+
   $('terminal-clear').addEventListener('click', () => (terminal.textContent = ''));
 
   // ---------- composer: contenteditable with inline link tokens ----------
@@ -767,6 +783,12 @@
     });
   }
 
+  if (api.onTerminalStreamChunk) {
+    api.onTerminalStreamChunk((chunk) => {
+      termStreamChunk(chunk, 'stderr');
+    });
+  }
+
   // ---------- engine events ----------
   api.onEngineEvent((ev) => {
     switch (ev.kind) {
@@ -866,6 +888,7 @@
   const effortSelect = $('cfg-effort');
   const allowedToolsInput = $('cfg-allowedTools');
   const claudeExecutableInput = $('cfg-claudeExecutable');
+  const sanitizeLogsCheckbox = $('cfg-sanitizeLogs');
   const chooseWorkspaceRootBtn = $('choose-workspaceRoot');
   const chooseWorkspaceRepoBtn = $('choose-workspaceRepo');
   const healthBox = $('health-box');
@@ -911,6 +934,7 @@
     if (languageSelectCfg) languageSelectCfg.value = cfg.language || i18n.getLang() || 'de';
     if (approvalModeSelectCfg) approvalModeSelectCfg.value = cfg.approvalMode || 'safe';
     if (greetOnStartCheckbox) greetOnStartCheckbox.checked = Boolean(cfg.greetOnStart);
+    if (sanitizeLogsCheckbox) sanitizeLogsCheckbox.checked = cfg.sanitizeLogs !== false;
     if (workspaceRootInput) workspaceRootInput.value = cfg.workspaceRoot || '';
     if (workspaceRepoInput) workspaceRepoInput.value = cfg.workspaceRepo || '';
     if (workspaceGitUrlInput) workspaceGitUrlInput.value = cfg.workspaceGitUrl || '';
@@ -971,6 +995,7 @@
         language: languageSelectCfg ? languageSelectCfg.value : 'de',
         approvalMode: approvalModeSelectCfg ? approvalModeSelectCfg.value : 'safe',
         greetOnStart: greetOnStartCheckbox ? greetOnStartCheckbox.checked : false,
+        sanitizeLogs: sanitizeLogsCheckbox ? sanitizeLogsCheckbox.checked : true,
         workspaceRoot: (workspaceRootInput ? workspaceRootInput.value.trim() : '') || undefined,
         workspaceRepo: (workspaceRepoInput ? workspaceRepoInput.value.trim() : '') || undefined,
         workspaceGitUrl: (workspaceGitUrlInput ? workspaceGitUrlInput.value.trim() : '') || undefined,

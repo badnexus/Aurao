@@ -55,6 +55,8 @@ export interface PocConfig {
   effort?: Effort;
   /** Optional path to a Claude Code executable; omit to use the one bundled with the SDK. */
   claudeExecutable?: string;
+  /** Whether to strip ANSI, collapse \r overwrites, and truncate terminal logs for the LLM. Defaults to true. */
+  sanitizeLogs?: boolean;
 }
 
 // dist/main/config.js -> ../.. = POC root (inside app.asar when packaged)
@@ -69,6 +71,7 @@ const DEFAULTS: PocConfig = {
   workspaceRoot: app.isPackaged ? app.getPath('documents') : path.resolve(POC_ROOT, '..'),
   greetOnStart: false,
   persona: 'standard',
+  sanitizeLogs: true,
 };
 
 const ENGINE_TYPES: EngineType[] = ['claude', 'agy', 'gpts'];
@@ -98,6 +101,7 @@ export const USER_KEYS = [
   'allowedTools',
   'effort',
   'claudeExecutable',
+  'sanitizeLogs',
 ] as const;
 
 function userOverrides(cfg: Partial<PocConfig>, bundled: Partial<PocConfig>): Partial<PocConfig> {
@@ -130,6 +134,7 @@ export function loadConfig(): PocConfig {
   if (typeof cfg.workspaceRepo !== 'string') cfg.workspaceRepo = DEFAULTS.workspaceRepo;
   if (typeof cfg.workspaceRoot !== 'string') cfg.workspaceRoot = DEFAULTS.workspaceRoot;
   if (typeof cfg.greetOnStart !== 'boolean') cfg.greetOnStart = DEFAULTS.greetOnStart;
+  if (typeof cfg.sanitizeLogs !== 'boolean') cfg.sanitizeLogs = DEFAULTS.sanitizeLogs;
   if (cfg.workspaceGitUrl !== undefined && (typeof cfg.workspaceGitUrl !== 'string' || !cfg.workspaceGitUrl.trim())) delete cfg.workspaceGitUrl;
   if (cfg.availableModels !== undefined && !Array.isArray(cfg.availableModels)) delete cfg.availableModels;
   if (cfg.effort !== undefined && !EFFORTS.includes(cfg.effort)) delete cfg.effort;

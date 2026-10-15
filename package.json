@@ -1,12 +1,13 @@
 {
   "name": "termi",
   "productName": "Termi",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A friendly, cozy chat interface wrapper for powerful Agentic AI CLIs.",
   "main": "dist/main/main.js",
   "scripts": {
     "prebuild": "node -e \"require('fs').mkdirSync('src/renderer/vendor',{recursive:true});require('fs').copyFileSync('node_modules/marked/lib/marked.umd.js','src/renderer/vendor/marked.umd.js')\"",
     "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/*.test.js",
     "start": "npm run build && electron .",
     "dev": "electron .",
     "dist": "npm run build && electron-builder --win portable",

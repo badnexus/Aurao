@@ -2,6 +2,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import type { HistoricalMessage, SessionSummary } from './EngineTypes';
+import { sanitizeForLlm } from './LogSanitizer';
 
 const GREETING_REGEX = /^(casual|friendly|general|simple)?\s*(greeting|begr[üu]ßung)$/i;
 const IS_GREETING_TEXT = /^(hallo|hello|hi|hey|guten tag|moin|servus)\b[\s\w]*$/i;
@@ -229,6 +230,52 @@ export async function getClaudeSessionHistory(sessionId: string): Promise<Histor
   }
 }
 
+/**
+ * Rolling context summarization:
+ * For commands older than keepTurns (default 3) that completed successfully (exit code 0),
+ * replace the raw stdout in the message text with [System: Command executed successfully. Output hidden.].
+ */
+export function summarizeRollingContext(
+  messages: HistoricalMessage[],
+  keepTurns = 3,
+  sanitizeLogs = true,
+): HistoricalMessage[] {
+  const total = messages.length;
+  return messages.map((m, idx) => {
+    // Number of turns (assistant responses) after this message
+    const turnsFromEnd = Math.floor((total - 1 - idx) / 2);
+    let text = m.text;
+
+    if (turnsFromEnd >= keepTurns) {
+      const isExitCodeZero =
+        /exit(?:ed with)? code:?\s*0\b/i.test(text) ||
+        /\bstatus:?\s*0\b/i.test(text) ||
+        /\bexited with status 0\b/i.test(text) ||
+        /Command executed successfully/i.test(text);
+
+      if (isExitCodeZero) {
+        if (/(Output:|stdout:)[\s\S]+/i.test(text)) {
+          text = text.replace(
+            /(?:Output:|stdout:)[\s\S]+/i,
+            'Output:\n[System: Command executed successfully. Output hidden.]',
+          );
+        } else if (text.length > 300) {
+          text = '[System: Command executed successfully. Output hidden.]';
+        }
+      }
+    }
+
+    if (sanitizeLogs) {
+      text = sanitizeForLlm(text, true);
+    }
+
+    return {
+      ...m,
+      text,
+    };
+  });
+}
+
 export async function listSessions(engineType: string, cwd?: string): Promise<SessionSummary[]> {
   if (engineType === 'agy') {
     return listAgySessions(cwd);
@@ -239,12 +286,16 @@ export async function listSessions(engineType: string, cwd?: string): Promise<Se
   return [];
 }
 
-export async function getSessionHistory(engineType: string, sessionId: string): Promise<HistoricalMessage[]> {
+export async function getSessionHistory(
+  engineType: string,
+  sessionId: string,
+  options?: { keepTurns?: number; sanitizeLogs?: boolean },
+): Promise<HistoricalMessage[]> {
+  let history: HistoricalMessage[] = [];
   if (engineType === 'agy') {
-    return getAgySessionHistory(sessionId);
+    history = getAgySessionHistory(sessionId);
+  } else if (engineType === 'claude') {
+    history = await getClaudeSessionHistory(sessionId);
   }
-  if (engineType === 'claude') {
-    return getClaudeSessionHistory(sessionId);
-  }
-  return [];
+  return summarizeRollingContext(history, options?.keepTurns ?? 3, options?.sanitizeLogs ?? true);
 }

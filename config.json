@@ -3,5 +3,6 @@
   "agentName": "Assistant",
   "greetOnStart": false,
   "persona": "standard",
-  "approvalMode": "safe"
+  "approvalMode": "safe",
+  "sanitizeLogs": true
 }
