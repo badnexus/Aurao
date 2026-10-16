@@ -19,6 +19,30 @@ export interface DirListing {
 
 const HIDE = new Set(['.git', 'node_modules', 'Desktop.ini', 'desktop.ini']);
 
+const WIN_HIDDEN_NAMES = new Set([
+  'appdata',
+  'application data',
+  'cookies',
+  'local settings',
+  'my documents',
+  'nethood',
+  'printhood',
+  'recent',
+  'sendto',
+  'start menu',
+  'templates',
+  'thumbs.db',
+  'ntuser.ini',
+]);
+
+function isHiddenEntry(name: string): boolean {
+  if (name.startsWith('.') || name.startsWith('~$')) return true;
+  const lower = name.toLowerCase();
+  if (WIN_HIDDEN_NAMES.has(lower)) return true;
+  if (lower.startsWith('ntuser.dat')) return true;
+  return false;
+}
+
 /** Folder or file? Used for paths dropped from Windows Explorer. */
 export function statPath(p: string): { isDir: boolean } {
   try {
@@ -28,7 +52,7 @@ export function statPath(p: string): { isDir: boolean } {
   }
 }
 
-export function listDir(dir: string): DirListing {
+export function listDir(dir: string, showHidden = false): DirListing {
   const resolved = path.resolve(dir);
   const parent = path.dirname(resolved);
   let names: string[] = [];
@@ -40,6 +64,7 @@ export function listDir(dir: string): DirListing {
   const entries: FileEntry[] = [];
   for (const name of names) {
     if (HIDE.has(name)) continue;
+    if (!showHidden && isHiddenEntry(name)) continue;
     const full = path.join(resolved, name);
     try {
       const st = fs.statSync(full);
@@ -47,7 +72,7 @@ export function listDir(dir: string): DirListing {
       let size = st.size;
       if (isDir) {
         try {
-          size = fs.readdirSync(full).filter((n) => !HIDE.has(n)).length;
+          size = fs.readdirSync(full).filter((n) => !HIDE.has(n) && (showHidden || !isHiddenEntry(n))).length;
         } catch {
           size = 0;
         }

@@ -545,6 +545,40 @@
     q.hidden = q.childElementCount === 0;
   }
   // ---------- explorer ----------
+  let standardDirs = {};
+  if (api.getStandardDirs) {
+    api.getStandardDirs().then((dirs) => {
+      standardDirs = dirs || {};
+      updateQuickBarActive(state.dir);
+    }).catch(() => {});
+  }
+
+  function updateQuickBarActive(currentDir) {
+    const bar = $('workspace-quick-bar');
+    if (!bar || !currentDir) return;
+    const normCurrent = currentDir.toLowerCase().replace(/[\\/]+$/, '');
+    bar.querySelectorAll('.quick-pill').forEach((btn) => {
+      const key = btn.dataset.quickDir;
+      const target = standardDirs[key];
+      const isMatch = Boolean(target && target.toLowerCase().replace(/[\\/]+$/, '') === normCurrent);
+      btn.classList.toggle('active', isMatch);
+    });
+  }
+
+  const quickBar = $('workspace-quick-bar');
+  if (quickBar) {
+    quickBar.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.quick-pill');
+      if (!btn) return;
+      const key = btn.dataset.quickDir;
+      if (!standardDirs[key] && api.getStandardDirs) {
+        try { standardDirs = (await api.getStandardDirs()) || {}; } catch {}
+      }
+      const target = standardDirs[key];
+      if (target) renderDir(target);
+    });
+  }
+
   async function renderDir(dir) {
     let listing;
     try {
@@ -554,6 +588,7 @@
       return;
     }
     state.dir = listing.dir;
+    updateQuickBarActive(listing.dir);
     const crumbs = $('crumbs');
     crumbs.innerHTML = '';
     const parts = listing.dir.split(/[\\/]/).filter(Boolean);
@@ -884,6 +919,7 @@
   const workspaceRootInput = $('cfg-workspaceRoot');
   const workspaceRepoInput = $('cfg-workspaceRepo');
   const workspaceGitUrlInput = $('cfg-workspaceGitUrl');
+  const showHiddenFilesCheckbox = $('cfg-showHiddenFiles');
   const modelInput = $('cfg-model');
   const availableModelsInput = $('cfg-availableModels');
   const effortSelect = $('cfg-effort');
@@ -939,6 +975,7 @@
     if (workspaceRootInput) workspaceRootInput.value = cfg.workspaceRoot || '';
     if (workspaceRepoInput) workspaceRepoInput.value = cfg.workspaceRepo || '';
     if (workspaceGitUrlInput) workspaceGitUrlInput.value = cfg.workspaceGitUrl || '';
+    if (showHiddenFilesCheckbox) showHiddenFilesCheckbox.checked = Boolean(cfg.showHiddenFiles);
     if (modelInput) modelInput.value = cfg.model || '';
     if (availableModelsInput) availableModelsInput.value = Array.isArray(cfg.availableModels) ? cfg.availableModels.join(', ') : '';
     if (effortSelect) effortSelect.value = cfg.effort || '';
@@ -1008,6 +1045,7 @@
         workspaceRoot: (workspaceRootInput ? workspaceRootInput.value.trim() : '') || undefined,
         workspaceRepo: (workspaceRepoInput ? workspaceRepoInput.value.trim() : '') || undefined,
         workspaceGitUrl: (workspaceGitUrlInput ? workspaceGitUrlInput.value.trim() : '') || undefined,
+        showHiddenFiles: showHiddenFilesCheckbox ? showHiddenFilesCheckbox.checked : false,
         model: (modelInput ? modelInput.value.trim() : '') || undefined,
         availableModels: modelsArr,
         effort: (effortSelect ? effortSelect.value : '') || undefined,
@@ -1029,7 +1067,7 @@
       }
       if (personaSelect) personaSelect.value = updated.persona || 'standard';
       updateApprovalsUI(updated.approvalMode || 'safe');
-      if (updated.workspaceRoot) renderDir(updated.workspaceRoot);
+      renderDir(updated.workspaceRoot || state.dir);
     });
   }
 

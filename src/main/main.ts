@@ -355,7 +355,12 @@ ipcMain.handle('config:saveAll', async (_e, newValues: Partial<PocConfig>) => {
   return cfg;
 });
 ipcMain.handle('skills:list', () => listWorkspaceSkills(cfg.workspaceRepo));
-ipcMain.handle('files:list', (_e, dir?: string) => listDir(dir || cfg.workspaceRoot));
+ipcMain.handle('files:list', (_e, dir?: string) => listDir(dir || cfg.workspaceRoot, Boolean(cfg.showHiddenFiles)));
+ipcMain.handle('files:getStandardDirs', () => ({
+  desktop: app.getPath('desktop'),
+  documents: app.getPath('documents'),
+  downloads: app.getPath('downloads'),
+}));
 ipcMain.handle('files:stat', (_e, p: string) => statPath(p));
 ipcMain.handle('files:chooseFolder', async () => {
   if (!win) return null;

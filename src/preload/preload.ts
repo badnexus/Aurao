@@ -6,6 +6,7 @@ const api = {
   getConfig: () => ipcRenderer.invoke('config:get'),
   listSkills: () => ipcRenderer.invoke('skills:list'),
   listDir: (dir?: string) => ipcRenderer.invoke('files:list', dir),
+  getStandardDirs: () => ipcRenderer.invoke('files:getStandardDirs'),
   chooseFolder: () => ipcRenderer.invoke('files:chooseFolder'),
   statPath: (p: string) => ipcRenderer.invoke('files:stat', p),
   openPath: (p: string) => ipcRenderer.invoke('shell:openPath', p),

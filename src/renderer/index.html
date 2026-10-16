@@ -9,14 +9,32 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <div class="logo aura-emblem"><span class="aura-letter">A</span></div>
+      <div class="logo aura-emblem" aria-hidden="true">
+        <svg class="aura-emblem-svg" width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="auraRingGrad" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#60a5fa" />
+              <stop offset="38%" stop-color="#c084fc" />
+              <stop offset="72%" stop-color="#f472b6" />
+              <stop offset="100%" stop-color="#fbbf24" />
+            </linearGradient>
+          </defs>
+          <circle cx="22" cy="22" r="20.5" fill="url(#auraRingGrad)" />
+          <circle cx="22" cy="22" r="18" fill="#0f172a" />
+          <path d="M22 13.5L15.2 29.5H18.6L19.9 26.1H24.1L25.4 29.5H28.8L22 13.5ZM20.9 23.3L22 20.1L23.1 23.3H20.9Z" fill="#ffffff" />
+        </svg>
+      </div>
       <div>
         <div class="brand-title">Aurao</div>
         <div class="brand-sub" data-i18n="brand.sub">Dein Assistent — einfach erklärt.</div>
       </div>
-      <button class="topbar-btn ghost" id="topbar-new-chat" title="Neuen Chat starten" style="margin-left: 8px;"><span data-i18n="chat.newBtnShort">+ Neuer Chat</span></button>
     </div>
     <div class="topbar-right">
+      <div class="topbar-field">
+        <span class="topbar-field-label" data-i18n="chat.sessionLabel">Sitzung</span>
+        <button class="topbar-btn" id="topbar-new-chat" title="Neuen Chat starten"><span data-i18n="chat.newBtnShort">+ Neuer Chat</span></button>
+      </div>
+      <div class="topbar-divider"></div>
       <div class="topbar-field">
         <span class="topbar-field-label" data-i18n="persona.label">Aura-Persona</span>
         <select id="persona" class="pill-select">
@@ -125,6 +143,11 @@
           <button class="ghost" id="explorer-hide" title="Arbeitsbereich ausblenden" data-i18n="explorer.hide">⟩</button>
         </div>
       </div>
+      <div class="workspace-quick-bar" id="workspace-quick-bar">
+        <button type="button" class="quick-pill" data-quick-dir="desktop" data-i18n="quick.desktop">🖥️ Desktop</button>
+        <button type="button" class="quick-pill" data-quick-dir="documents" data-i18n="quick.documents">📄 Dokumente</button>
+        <button type="button" class="quick-pill" data-quick-dir="downloads" data-i18n="quick.downloads">📥 Downloads</button>
+      </div>
       <div class="crumbs" id="crumbs"></div>
       <div class="grid" id="files"></div>
       <div class="explorer-hint" data-i18n="hint.explorer">Ziehe eine Datei oder einen Ordner in den Chat – der Pfad wird automatisch eingesetzt.</div>
@@ -227,6 +250,13 @@
           <div class="form-row">
             <label for="cfg-workspaceGitUrl" data-i18n="settings.workspaceGitUrl">Workspace Git-URL (optional)</label>
             <input type="text" id="cfg-workspaceGitUrl" name="workspaceGitUrl" placeholder="https://github.com/..." />
+          </div>
+
+          <div class="form-row checkbox-row">
+            <label class="checkbox-label">
+              <input type="checkbox" id="cfg-showHiddenFiles" name="showHiddenFiles" />
+              <span data-i18n="settings.showHiddenFiles">Versteckte Systemordner anzeigen (.config, .cache, etc.)</span>
+            </label>
           </div>
         </fieldset>
 
