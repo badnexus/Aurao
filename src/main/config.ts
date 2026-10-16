@@ -129,6 +129,7 @@ export function loadConfig(): PocConfig {
   }
   // Legacy persona name
   if ((raw as { persona?: string }).persona === 'captain') raw.persona = 'standard';
+  if ((raw as { engineType?: string }).engineType === 'codex') raw.engineType = 'gpts';
   const cfg: PocConfig = { ...DEFAULTS, ...raw };
   if (!ENGINE_TYPES.includes(cfg.engineType)) cfg.engineType = DEFAULTS.engineType;
   if (!PERSONAS.includes(cfg.persona)) cfg.persona = DEFAULTS.persona;

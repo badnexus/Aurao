@@ -279,6 +279,244 @@ export function summarizeRollingContext(
   });
 }
 
+const codexSessionCache = new Map<
+  string,
+  { mtimeMs: number; summary: Omit<SessionSummary, 'matchesCwd'>; filePath: string }
+>();
+
+function defaultCodexSessionsDir(): string {
+  const home = process.env.CODEX_HOME || path.join(os.homedir(), '.codex');
+  return path.join(home, 'sessions');
+}
+
+function collectRolloutFiles(dir: string, acc: Array<{ filePath: string; mtimeMs: number }> = []): Array<{ filePath: string; mtimeMs: number }> {
+  if (!fs.existsSync(dir)) return acc;
+  let entries: fs.Dirent[] = [];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return acc;
+  }
+  for (const entry of entries) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      collectRolloutFiles(full, acc);
+    } else if (entry.isFile() && entry.name.endsWith('.jsonl')) {
+      try {
+        const st = fs.statSync(full);
+        acc.push({ filePath: full, mtimeMs: st.mtimeMs });
+      } catch {
+        // ignore unreadable file
+      }
+    }
+  }
+  return acc;
+}
+
+function parseCodexMessageEntry(entry: Record<string, any>): { role: 'user' | 'assistant'; text: string; timestamp?: string } | null {
+  const ts = entry.timestamp || entry.payload?.timestamp || entry.created_at;
+
+  // Format 1: {"type":"event_msg","payload":{"type":"user_message"|"agent_message","message":"..."}}
+  if (entry.type === 'event_msg' && entry.payload) {
+    const pType = entry.payload.type;
+    if (pType === 'user_message' && typeof entry.payload.message === 'string') {
+      return { role: 'user', text: entry.payload.message.trim(), timestamp: ts };
+    }
+    if ((pType === 'agent_message' || pType === 'assistant_message') && typeof entry.payload.message === 'string') {
+      return { role: 'assistant', text: entry.payload.message.trim(), timestamp: ts };
+    }
+  }
+
+  // Format 2: {"type":"response_item","payload":{"type":"message","role":"user"|"assistant","content":[...]}}
+  const msgObj = entry.type === 'response_item' && entry.payload ? entry.payload : entry;
+  if ((msgObj.role === 'user' || msgObj.role === 'assistant') && msgObj.content !== undefined) {
+    let text = '';
+    if (typeof msgObj.content === 'string') {
+      text = msgObj.content;
+    } else if (Array.isArray(msgObj.content)) {
+      text = msgObj.content
+        .filter((b: any) => b && (b.type === 'text' || b.type === 'input_text' || b.type === 'output_text') && typeof b.text === 'string')
+        .map((b: any) => b.text)
+        .join('\n');
+    }
+    text = text.trim();
+    if (text) return { role: msgObj.role, text, timestamp: ts };
+  }
+
+  return null;
+}
+
+function extractSessionIdFromFilename(filePath: string): string {
+  const base = path.basename(filePath, '.jsonl');
+  // rollout-2026-10-16T12-00-00-0199a213-81c0-7800-8aa1-bbab2a035a53 -> extract UUID or full basename
+  const uuidMatch = base.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
+  if (uuidMatch) return uuidMatch[1];
+  return base.replace(/^rollout-\d{4}-\d{2}-\d{2}T[\d-]+-/, '') || base;
+}
+
+export function listCodexSessions(cwd?: string, sessionsDirOverride?: string): SessionSummary[] {
+  try {
+    const rootDir = sessionsDirOverride || defaultCodexSessionsDir();
+    const files = collectRolloutFiles(rootDir);
+    files.sort((a, b) => b.mtimeMs - a.mtimeMs);
+    const recentFiles = files.slice(0, 100);
+    const normalizedCwd = cwd ? path.resolve(cwd).toLowerCase() : '';
+
+    const results: SessionSummary[] = [];
+    const seenIds = new Set<string>();
+
+    for (const { filePath, mtimeMs } of recentFiles) {
+      let cached = codexSessionCache.get(filePath);
+      if (!cached || cached.mtimeMs !== mtimeMs) {
+        let content = '';
+        try {
+          content = fs.readFileSync(filePath, 'utf8');
+        } catch {
+          continue;
+        }
+        const lines = content.split(/\r?\n/);
+        let sessionId = extractSessionIdFromFilename(filePath);
+        let workspace = '';
+        let lastModified = new Date(mtimeMs).toISOString();
+        const userPrompts: string[] = [];
+        let stepCount = 0;
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const entry = JSON.parse(line);
+            if (entry.type === 'session_meta' && entry.payload) {
+              if (entry.payload.id) sessionId = String(entry.payload.id);
+              if (entry.payload.cwd) workspace = String(entry.payload.cwd);
+              if (entry.payload.timestamp) lastModified = String(entry.payload.timestamp);
+            } else if (entry.id && entry.cwd && !entry.type) {
+              sessionId = String(entry.id);
+              workspace = String(entry.cwd);
+              if (entry.timestamp) lastModified = String(entry.timestamp);
+            }
+
+            const msg = parseCodexMessageEntry(entry);
+            if (msg) {
+              stepCount++;
+              if (msg.role === 'user') {
+                const cleaned = cleanUserPrompt(msg.text);
+                if (cleaned) userPrompts.push(cleaned);
+              }
+            }
+          } catch {
+            // ignore malformed JSONL line
+          }
+        }
+
+        const substantive = userPrompts.filter((p) => !IS_GREETING_TEXT.test(p));
+        const firstSub = substantive[0] || userPrompts[0] || '';
+        const lastSub = substantive[substantive.length - 1] || userPrompts[userPrompts.length - 1] || '';
+
+        const title = firstSub
+          ? firstSub.length > 60
+            ? firstSub.slice(0, 57) + '…'
+            : firstSub
+          : sessionId.slice(0, 8);
+        let preview = lastSub && lastSub !== firstSub ? lastSub : firstSub;
+        if (preview.length > 140) preview = preview.slice(0, 137) + '…';
+
+        cached = {
+          mtimeMs,
+          filePath,
+          summary: {
+            id: sessionId,
+            title,
+            preview,
+            lastModified,
+            stepCount,
+            workspace,
+          },
+        };
+        codexSessionCache.set(filePath, cached);
+      }
+
+      if (seenIds.has(cached.summary.id)) continue;
+      seenIds.add(cached.summary.id);
+
+      const matchesCwd = Boolean(
+        normalizedCwd &&
+          cached.summary.workspace &&
+          path.resolve(cached.summary.workspace).toLowerCase() === normalizedCwd,
+      );
+
+      results.push({
+        ...cached.summary,
+        matchesCwd,
+      });
+    }
+
+    return results;
+  } catch (err) {
+    console.error('Failed to list codex sessions:', err);
+    return [];
+  }
+}
+
+export function getCodexSessionHistory(sessionId: string, sessionsDirOverride?: string): HistoricalMessage[] {
+  try {
+    const rootDir = sessionsDirOverride || defaultCodexSessionsDir();
+    const files = collectRolloutFiles(rootDir);
+    files.sort((a, b) => b.mtimeMs - a.mtimeMs);
+
+    let targetFile: string | null = null;
+    for (const { filePath } of files) {
+      if (path.basename(filePath).includes(sessionId)) {
+        targetFile = filePath;
+        break;
+      }
+      const cached = codexSessionCache.get(filePath);
+      if (cached && cached.summary.id === sessionId) {
+        targetFile = filePath;
+        break;
+      }
+    }
+
+    if (!targetFile) {
+      // Fallback: inspect session_meta line of each file
+      for (const { filePath } of files) {
+        try {
+          const firstLine = fs.readFileSync(filePath, 'utf8').split(/\r?\n/)[0] || '';
+          if (firstLine.includes(sessionId)) {
+            targetFile = filePath;
+            break;
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    if (!targetFile || !fs.existsSync(targetFile)) return [];
+
+    const content = fs.readFileSync(targetFile, 'utf8');
+    const history: HistoricalMessage[] = [];
+    for (const line of content.split(/\r?\n/)) {
+      if (!line.trim()) continue;
+      try {
+        const entry = JSON.parse(line);
+        const msg = parseCodexMessageEntry(entry);
+        if (msg && msg.text) {
+          // Avoid consecutive duplicate user messages when both event_msg and response_item are logged
+          const prev = history[history.length - 1];
+          if (prev && prev.role === msg.role && prev.text === msg.text) continue;
+          history.push(msg);
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return history;
+  } catch (err) {
+    console.error('Failed to get codex session history:', err);
+    return [];
+  }
+}
+
 export async function listSessions(engineType: string, cwd?: string): Promise<SessionSummary[]> {
   if (engineType === 'agy') {
     return listAgySessions(cwd);
@@ -286,11 +524,15 @@ export async function listSessions(engineType: string, cwd?: string): Promise<Se
   if (engineType === 'claude') {
     return listClaudeSessions(cwd);
   }
+  if (engineType === 'gpts' || engineType === 'codex') {
+    return listCodexSessions(cwd);
+  }
   return [];
 }
 
 export async function getSessionHistory(engineType: string, sessionId: string): Promise<HistoricalMessage[]> {
   if (engineType === 'agy') return getAgySessionHistory(sessionId);
   if (engineType === 'claude') return getClaudeSessionHistory(sessionId);
+  if (engineType === 'gpts' || engineType === 'codex') return getCodexSessionHistory(sessionId);
   return [];
 }

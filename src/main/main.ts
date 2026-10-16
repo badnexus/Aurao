@@ -7,7 +7,7 @@ import type { EngineEvent } from './EngineTypes';
 import type { IEngine } from './IEngine';
 import { ClaudeEngine } from './ClaudeEngine';
 import { AgyEngine, findOnPath } from './AgyEngine';
-import { GptsEngine } from './GptsEngine';
+import { GptsEngine, resolveCodexBinary } from './GptsEngine';
 import { listWorkspaceSkills } from './skills';
 import { syncWorkspace } from './workspace';
 import { listDir, statPath } from './files';
@@ -89,7 +89,14 @@ function createEngine(): IEngine {
     sanitizeLogs: cfg.sanitizeLogs !== false,
   };
   if (cfg.engineType === 'agy') return new AgyEngine(common);
-  if (cfg.engineType === 'gpts') return new GptsEngine(common);
+  if (cfg.engineType === 'gpts') {
+    return new GptsEngine({
+      ...common,
+      systemPromptAppend: systemPromptAppend(cfg.persona, getLanguage()),
+      language: getLanguage(),
+      effort: cfg.effort,
+    });
+  }
   return new ClaudeEngine({
     ...common,
     systemPromptAppend: systemPromptAppend(cfg.persona, getLanguage()),
@@ -312,6 +319,41 @@ function checkClaudeHealth(): { ok: boolean; provider: string; message: string; 
   };
 }
 
+function checkCodexHealth(): { ok: boolean; path?: string; provider?: string; message: string; tip?: string } {
+  const resolved = resolveCodexBinary();
+  if (!resolved) {
+    return {
+      ok: false,
+      provider: 'none',
+      message: 'OpenAI Codex CLI (codex) wurde nicht im PATH gefunden.',
+      tip: 'Bitte installiere die OpenAI Codex CLI im Terminal per "npm install -g @openai/codex" und melde dich mit "codex login" an oder setze OPENAI_API_KEY.',
+    };
+  }
+
+  const hasApiKey = Boolean(process.env.OPENAI_API_KEY || process.env.AZURE_OPENAI_API_KEY);
+  const authJsonPath = path.join(app.getPath('home'), '.codex', 'auth.json');
+  const hasAuthJson = fs.existsSync(authJsonPath);
+
+  if (hasApiKey || hasAuthJson) {
+    const modeNote = !resolved.isCmdShim ? 'Native Binary' : 'CLI';
+    const authNote = hasApiKey ? 'API-Key' : 'Codex Login (~/.codex/auth.json)';
+    return {
+      ok: true,
+      path: resolved.exe,
+      provider: 'openai',
+      message: `OpenAI Codex CLI bereit (${modeNote}, ${authNote}): ${resolved.exe}`,
+    };
+  }
+
+  return {
+    ok: true,
+    path: resolved.exe,
+    provider: 'openai-unverified',
+    message: `OpenAI Codex CLI gefunden: ${resolved.exe}`,
+    tip: 'Falls noch nicht angemeldet: Führe im Terminal "codex login" aus oder setze OPENAI_API_KEY in den Umgebungsvariablen.',
+  };
+}
+
 // --- IPC: everything the renderer may ask for --------------------------------------------
 
 ipcMain.handle('config:get', () => ({
@@ -321,10 +363,10 @@ ipcMain.handle('config:get', () => ({
   runtime: { skipPermissions: SKIP_PERMISSIONS, configPath: configPath() },
 }));
 ipcMain.handle('system:checkHealth', (_e, engineType?: string) => {
-  const engine = engineType || cfg.engineType;
-  if (engine === 'agy') return { engine: 'agy', ...checkAgyHealth() };
-  if (engine === 'claude') return { engine: 'claude', ...checkClaudeHealth() };
-  return { engine: 'gpts', ok: true, message: 'GPTS Engine (Vorbereitet)' };
+  const eng = engineType || cfg.engineType;
+  if (eng === 'agy') return { engine: 'agy', ...checkAgyHealth() };
+  if (eng === 'claude') return { engine: 'claude', ...checkClaudeHealth() };
+  return { engine: 'gpts', ...checkCodexHealth() };
 });
 ipcMain.handle('config:saveAll', async (_e, newValues: Partial<PocConfig>) => {
   const oldEngine = cfg.engineType;
@@ -449,16 +491,17 @@ ipcMain.handle('models:set', async (_e, model: string) => {
 ipcMain.handle('sessions:list', async () => {
   try {
     const list = await listSessions(cfg.engineType, resolveCwd());
+    const activeId = currentConversationId || (engine as GptsEngine | null)?.getThreadId?.() || null;
     return list.map((s) => ({
       ...s,
-      isCurrent: s.id === currentConversationId,
+      isCurrent: s.id === activeId,
     }));
   } catch (e) {
     sendToUi({ kind: 'terminal', line: `Sessions list error: ${String(e)}`, level: 'stderr' });
     return [];
   }
 });
-ipcMain.handle('sessions:current', () => currentConversationId);
+ipcMain.handle('sessions:current', () => currentConversationId || (engine as GptsEngine | null)?.getThreadId?.() || null);
 ipcMain.handle('sessions:getHistory', async (_e, conversationId: string) => {
   try {
     return await getSessionHistory(cfg.engineType, conversationId);
