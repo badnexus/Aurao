@@ -55,7 +55,7 @@ export interface PocConfig {
   effort?: Effort;
   /** Optional path to a Claude Code executable; omit to use the one bundled with the SDK. */
   claudeExecutable?: string;
-  /** Whether to strip ANSI, collapse \r overwrites, and truncate terminal logs for the LLM. Defaults to true. */
+  /** Strip ANSI colour codes from the engine's stderr before it is shown in the Terminal view. Defaults to true. */
   sanitizeLogs?: boolean;
 }
 

@@ -10,7 +10,7 @@ import { assistantTerminalLines, describeTool } from './EngineTypes';
 import type { ApprovalMode } from './config';
 import { t } from './i18n';
 import { StreamAccumulator } from './StreamAccumulator';
-import { sanitizeForLlm } from './LogSanitizer';
+import { stripAnsi } from './LogSanitizer';
 
 export class AgyEngine extends EventEmitter implements IEngine {
   private stopped = false;
@@ -25,9 +25,11 @@ export class AgyEngine extends EventEmitter implements IEngine {
   private exited = false;
   readonly restartOnInterrupt = true;
 
+  // stderr arrives in bursts: batch it (60 ms) so the UI gets one IPC message per batch, not per fragment.
+  // Terminal view only; with sanitizeLogs the ANSI colour codes are stripped. Nothing here reaches the model.
   private stderrAccumulator = new StreamAccumulator((chunk) => {
-    this.emitEvent({ kind: 'terminal_chunk', chunk, level: 'stderr' });
-    for (const line of chunk.split(/\r?\n/).filter((l) => l.trim())) {
+    const text = this.opts.sanitizeLogs !== false ? stripAnsi(chunk) : chunk;
+    for (const line of text.split(/\r?\n/).filter((l) => l.trim())) {
       this.emitEvent({ kind: 'terminal', line, level: 'stderr' });
     }
   }, 60);
@@ -235,8 +237,7 @@ export class AgyEngine extends EventEmitter implements IEngine {
 
   send(text: string): void {
     this.emitEvent({ kind: 'terminal', line: `> ${text.replace(/\s+/g, ' ').slice(0, 200)}`, level: 'info' });
-    const sanitized = sanitizeForLlm(text, this.opts.sanitizeLogs !== false);
-    if (this.write({ event: 'user', message: { content: sanitized } })) this.turnOpen = true;
+    if (this.write({ event: 'user', message: { content: text } })) this.turnOpen = true;
     else {
       this.emitEvent({ kind: 'error', text: t('agy.notRunning') });
     }

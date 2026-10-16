@@ -269,21 +269,6 @@
     b.textContent = state.unseenTerminal > 99 ? '99+' : String(state.unseenTerminal);
   }
 
-  function termStreamChunk(chunk, level = 'stderr') {
-    if (!chunk) return;
-    let last = terminal.lastElementChild;
-    if (!last || !last.classList.contains('t-chunk') || !last.classList.contains(`t-${level}`)) {
-      last = document.createElement('span');
-      last.className = `t-chunk t-${level}`;
-      last.innerHTML = `<span class="t-time">${now()} </span>`;
-      terminal.appendChild(last);
-    }
-    last.appendChild(document.createTextNode(chunk));
-    while (terminal.childElementCount > TERMINAL_MAX_LINES) terminal.firstElementChild.remove();
-    if (termPinned) terminal.scrollTop = terminal.scrollHeight;
-    if (state.view !== 'terminal') { state.unseenTerminal++; updateTerminalBadge(); }
-  }
-
   $('terminal-clear').addEventListener('click', () => (terminal.textContent = ''));
 
   // ---------- composer: contenteditable with inline link tokens ----------
@@ -783,11 +768,9 @@
     });
   }
 
-  if (api.onTerminalStreamChunk) {
-    api.onTerminalStreamChunk((chunk) => {
-      termStreamChunk(chunk, 'stderr');
-    });
-  }
+  // Dev aids used by the screenshot mode (see main.ts): switch view / echo an auto-sent message.
+  if (api.onShowView) api.onShowView((view) => showView(view));
+  if (api.onEchoUser) api.onEchoUser((text) => { addUser(text); setBusy(true); showWorking(); });
 
   // ---------- engine events ----------
   api.onEngineEvent((ev) => {
