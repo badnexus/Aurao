@@ -7,7 +7,7 @@
 
 <img width="100%" alt="Aurao Assistant Interface" src="assets/Aurao_Assistant.png" />
 
-**Aurao** is a safe, friendly desktop assistant for files, research, and everyday workflows. It brings the full power of autonomous agent frameworks—including the **Google Antigravity CLI (`agy`)** and the **Anthropic Claude Agent SDK**—to non-technical professionals, knowledge workers, and everyday users.
+**Aurao** is a safe, friendly desktop assistant for files, research, and everyday workflows. It brings the full power of autonomous agent frameworks—including the  **Open AI Codex CLI**, **Google Antigravity CLI (`agy`)** and the **Anthropic Claude Agent SDK**—to non-technical professionals, knowledge workers, and everyday users.
 
 > *"I originally built Aurao for my wife so she could harness the full power of autonomous agentic AI for research, document management, and workflows—without having to learn terminal commands, Git, or shell syntax. It worked so well that I realized millions of non-technical professionals, researchers, and creators face the exact same barrier."*
 
