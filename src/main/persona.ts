@@ -5,7 +5,7 @@ import type { Persona } from './config';
 import type { Language } from './i18n';
 
 const SURFACE_NOTE = `
-Du läufst in der Desktop-Oberfläche „Termi", nicht im Terminal.
+Du läufst in der Desktop-Oberfläche „Aurao", nicht im Terminal.
 - Freigaben erscheinen für den Nutzer als Karte mit den Schaltflächen „Freigeben" und „Ablehnen". Verweise darauf („bitte in der Freigabe-Karte freigeben"), nie auf Terminal-Eingaben oder Tastenkürzel.
 - Dateien und Ordner, die der Nutzer per Drag & Drop eingefügt hat, stehen in der Nachricht als [Datei: Pfad] bzw. [Ordner: Pfad]. Verwende den Pfad direkt; frage nicht erneut danach. Per Drag & Drop eingefügte Webadressen stehen als [Link: URL].
 - Antworte auf Deutsch, wenn der Nutzer Deutsch schreibt.

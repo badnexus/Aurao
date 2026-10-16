@@ -3,48 +3,54 @@
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;" />
-  <title>Termi - Assistant for all</title>
+  <title>Aurao - Your Assistant for Everything</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <div class="logo">&gt;_</div>
+      <div class="logo aura-emblem"><span class="aura-letter">A</span></div>
       <div>
-        <div class="brand-title">Termi</div>
-        <div class="brand-sub" data-i18n="brand.sub">Dein Assistent – einfach erklärt.</div>
+        <div class="brand-title">Aurao</div>
+        <div class="brand-sub" data-i18n="brand.sub">Dein Assistent — einfach erklärt.</div>
       </div>
-      <button class="topbar-btn ghost" id="topbar-new-chat" title="Neuen Chat starten" style="margin-left: 8px;"><span>➕</span> <span data-i18n="chat.newBtnShort">Chat</span></button>
+      <button class="topbar-btn ghost" id="topbar-new-chat" title="Neuen Chat starten" style="margin-left: 8px;"><span data-i18n="chat.newBtnShort">+ Neuer Chat</span></button>
     </div>
     <div class="topbar-right">
-      <label class="topbar-control persona" title="Ansprache wählen">
-        <span class="topbar-label" data-i18n="persona.label">Ansprache</span>
-        <select id="persona">
+      <div class="topbar-field">
+        <span class="topbar-field-label" data-i18n="persona.label">Aura-Persona</span>
+        <select id="persona" class="pill-select">
           <option value="standard" data-i18n="persona.standard">Standard</option>
           <option value="soft" data-i18n="persona.soft">Einfach</option>
         </select>
-      </label>
-      <label class="topbar-control language-toggle" title="Sprache / Language">
-        <span class="topbar-label" data-i18n="lang.label">Sprache</span>
-        <select id="language">
+      </div>
+      <div class="topbar-divider"></div>
+      <div class="topbar-field">
+        <span class="topbar-field-label" data-i18n="lang.label">Sprache</span>
+        <select id="language" class="pill-select">
           <option value="de">DE</option>
           <option value="en">EN</option>
         </select>
-      </label>
-      <label class="topbar-control model" title="Modell wählen">
-        <span class="topbar-label" data-i18n="model.label">Modell</span>
-        <select id="model" disabled><option value="">Standard</option></select>
-      </label>
-      <label class="topbar-control approvals" title="Freigaben wählen">
-        <span class="topbar-label" data-i18n="approvals.label">Freigaben</span>
-        <select id="approvals">
-          <option value="ask" data-i18n="approvals.ask">Mit Freigabe</option>
-          <option value="safe" data-i18n="approvals.safe">Nur Änderungen</option>
-          <option value="bypass" data-i18n="approvals.bypass">Ohne Freigabe</option>
+      </div>
+      <div class="topbar-divider"></div>
+      <div class="topbar-field">
+        <span class="topbar-field-label" data-i18n="model.label">KI-Gehirn</span>
+        <select id="model" class="pill-select" disabled><option value="">Standard</option></select>
+      </div>
+      <div class="topbar-divider"></div>
+      <div class="topbar-field">
+        <span class="topbar-field-label" data-i18n="approvals.label">Sicherheitsmodus</span>
+        <select id="approvals" class="pill-select">
+          <option value="safe" data-i18n="approvals.safe">● Sichere Änderungen</option>
+          <option value="ask" data-i18n="approvals.ask">● Immer fragen</option>
+          <option value="bypass" data-i18n="approvals.bypass">● Ohne Freigabe</option>
         </select>
-      </label>
-      <div class="status" id="status"><span class="dot"></span><span id="status-text" data-i18n="status.starting">Engine startet …</span></div>
-      <button class="topbar-btn ghost" id="open-settings" title="Einstellungen & Diagnose" data-i18n="settings.btn">⚙️</button>
+      </div>
+      <div class="topbar-divider"></div>
+      <div class="topbar-settings-group" id="open-settings" role="button" tabindex="0" title="Einstellungen &amp; Diagnose">
+        <div class="settings-title"><span class="gear-ico">⚙️</span> <span data-i18n="settings.short">Settings</span></div>
+        <div class="status ready" id="status"><span class="dot"></span><span id="status-text" data-i18n="status.ready">✓ Geschützt &amp; Bereit</span></div>
+      </div>
     </div>
   </header>
   <div class="danger-banner" id="skip-banner" hidden data-i18n="banner.danger">⚠ Freigaben deaktiviert – Aktionen werden ohne Rückfrage ausgeführt.</div>
@@ -53,9 +59,9 @@
     <nav class="sidenav">
       <button class="nav active" data-view="chat"><span class="ico">💬</span><span data-i18n="nav.chat">Chat</span></button>
       <button class="nav" data-view="history"><span class="ico">📜</span><span data-i18n="nav.history">Verlauf</span></button>
-      <button class="nav" data-view="terminal"><span class="ico">&gt;_</span><span data-i18n="nav.terminal">Terminal</span><span class="badge" id="terminal-badge" hidden>0</span></button>
+      <button class="nav" data-view="terminal"><span class="ico">⚡</span><span data-i18n="nav.terminal">Aktionen</span><span class="badge" id="terminal-badge" hidden>0</span></button>
       <div class="nav-spacer"></div>
-      <button class="nav nav-toggle" id="explorer-toggle" title="Datei-Explorer ein-/ausblenden"><span class="ico">📁</span><span data-i18n="nav.explorer">Explorer</span></button>
+      <button class="nav nav-toggle" id="explorer-toggle" title="Arbeitsbereich ein-/ausblenden"><span class="ico">📁</span><span data-i18n="nav.explorer">Explorer</span></button>
     </nav>
     <div class="splitter" data-split="nav" title="Ziehen zum Anpassen · Doppelklick setzt zurück"></div>
 
@@ -66,12 +72,12 @@
         <div class="composer-wrap">
           <div class="quick" id="quick"></div>
           <div class="composer" id="composer">
-            <span class="composer-ico">&gt;_</span>
-            <div id="input" class="input" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true" data-i18n="chat.placeholder" data-placeholder="Beschreib einfach, was du brauchst … (Dateien, Ordner oder Links hierher ziehen)"></div>
-            <button class="send" id="send" title="Senden (Enter)" data-i18n="chat.send">➤</button>
+            <span class="aura-badge">Aura</span>
+            <div id="input" class="input" contenteditable="true" role="textbox" aria-multiline="true" spellcheck="true" data-i18n="chat.placeholder" data-placeholder="Frag mich alles, organisiere Dateien oder löse Probleme... (Dateien, Ordner oder Links hierher ziehen)"></div>
+            <button class="send" id="send" title="Senden (Enter)" data-i18n="chat.send">send</button>
           </div>
           <div class="composer-resolved" id="composer-resolved" hidden></div>
-          <div class="hint" data-i18n="hint.main">Nichts mit Außenwirkung passiert ohne deine Freigabe. Entwürfe siehst du zuerst.</div>
+          <div class="hint" data-i18n="hint.main">✓ Dein Computer ist sicher. Aurao ändert nichts ohne deine Zustimmung.</div>
         </div>
       </section>
 
@@ -83,7 +89,7 @@
             <div class="panel-sub" data-i18n="history.sub">Wähle eine frühere Sitzung, um sie nahtlos fortzusetzen, oder starte einen neuen Chat.</div>
           </div>
           <div class="history-head-actions">
-            <button class="primary" id="history-new-chat-btn" data-i18n="history.newChat">➕ Neuer Chat</button>
+            <button class="primary" id="history-new-chat-btn" data-i18n="history.newChat">+ Neuer Chat</button>
             <button class="ghost" id="history-refresh-btn" data-i18n="history.refresh">↻ Aktualisieren</button>
           </div>
         </div>
@@ -96,11 +102,11 @@
         </div>
       </section>
 
-      <!-- Terminal (Sichtfenster) -->
+      <!-- Aktionen (Sichtfenster) -->
       <section class="view" id="view-terminal" hidden>
         <div class="panel-head">
           <div>
-            <div class="panel-title" data-i18n="terminal.title">Terminal-Sichtfenster</div>
+            <div class="panel-title" data-i18n="terminal.title">Aktionen &amp; Hintergrundaktivität</div>
             <div class="panel-sub" data-i18n="terminal.sub">Zeigt live, was der Assistent im Hintergrund tatsächlich tut. Nur zum Zuschauen – hier muss nichts eingegeben werden.</div>
           </div>
           <button class="ghost" id="terminal-clear" data-i18n="terminal.clear">Leeren</button>
@@ -112,11 +118,11 @@
     <div class="splitter" data-split="explorer" title="Ziehen zum Anpassen · Doppelklick setzt zurück"></div>
     <aside class="explorer">
       <div class="explorer-head">
-        <div class="panel-title" data-i18n="explorer.title">📁 Datei-Explorer</div>
+        <div class="panel-title" data-i18n="explorer.title">📁 Mein Arbeitsbereich</div>
         <div class="explorer-actions">
           <button class="ghost" id="explorer-up" title="Eine Ebene nach oben" data-i18n="explorer.up">↑</button>
           <button class="ghost" id="explorer-choose" title="Anderen Ordner wählen" data-i18n="explorer.choose">Ordner …</button>
-          <button class="ghost" id="explorer-hide" title="Explorer ausblenden" data-i18n="explorer.hide">⟩</button>
+          <button class="ghost" id="explorer-hide" title="Arbeitsbereich ausblenden" data-i18n="explorer.hide">⟩</button>
         </div>
       </div>
       <div class="crumbs" id="crumbs"></div>
@@ -162,7 +168,7 @@
 
           <div class="form-row">
             <label for="cfg-agentName" data-i18n="settings.agentName">Name des Assistenten</label>
-            <input type="text" id="cfg-agentName" name="agentName" placeholder="Assistant" />
+            <input type="text" id="cfg-agentName" name="agentName" placeholder="Aurao" />
           </div>
 
           <div class="form-row">

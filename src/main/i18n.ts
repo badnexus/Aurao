@@ -5,7 +5,7 @@ export type Language = 'de' | 'en';
 export const LANGUAGES: Language[] = ['de', 'en'];
 
 const DE = {
-  'window.title': 'Termi - Assistant for all',
+  'window.title': 'Aurao - Dein Assistent für alles',
   'dialog.chooseFolder': 'Arbeitsordner wählen',
   'greeting': 'Hallo {agent}',
   'err.unexpected': 'Unerwarteter Fehler: {e}',
@@ -75,7 +75,7 @@ const DE = {
 export type MessageKey = keyof typeof DE;
 
 const EN: Record<MessageKey, string> = {
-  'window.title': 'Termi - Assistant for all',
+  'window.title': 'Aurao - Your Assistant for Everything',
   'dialog.chooseFolder': 'Choose working folder',
   'greeting': 'Hello {agent}',
   'err.unexpected': 'Unexpected error: {e}',

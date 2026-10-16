@@ -1,22 +1,37 @@
-/* Termi – renderer. Plain JS on purpose (no build step for the UI).
-   Talks to the engine only through window.termi (see preload.ts). */
+/* Aurao – renderer. Plain JS on purpose (no build step for the UI).
+   Talks to the engine through window.aurao (or fallback window.termi). */
 (() => {
   const $ = (id) => document.getElementById(id);
-  const api = window.termi;
+  const api = window.aurao || window.termi;
   const md = window.marked;
   const refs = window.refs;
   const i18n = window.i18n;
   const t = i18n.t;
   md.setOptions({ breaks: true, gfm: true });
   
+  function updateBrandUI() {
+    const name = state.agentName || 'Aurao';
+    const lang = i18n.getLang ? i18n.getLang() : 'de';
+    document.title = `${name} - ${lang === 'de' ? 'Dein Assistent für alles' : 'Your Assistant for Everything'}`;
+    const brandTitle = document.querySelector('.brand-title');
+    if (brandTitle) brandTitle.textContent = name;
+    const auraLetter = document.querySelector('.aura-letter');
+    if (auraLetter) auraLetter.textContent = name.charAt(0).toUpperCase();
+    const auraBadge = document.querySelector('.aura-badge');
+    if (auraBadge) auraBadge.textContent = name === 'Aurao' ? 'Aura' : name;
+  }
+
   function translateUI() {
-    const vars = { agent: state.agentName || 'Assistant' };
+    const vars = { agent: state.agentName || 'Aurao' };
     document.querySelectorAll('[data-i18n]').forEach((el) => {
       const key = el.dataset.i18n;
       if (el.dataset.placeholder !== undefined) {
         el.dataset.placeholder = t(key, vars);
-      } else if (el.id === 'send' || el.id === 'open-settings') {
-        el.title = t(key, vars); // keep the icon, only translate the tooltip
+      } else if (el.id === 'send') {
+        el.title = t('chat.sendTitle', vars) || t('chat.send', vars);
+        el.textContent = state.busy ? (t('chat.stop') || 'stop') : (t('chat.send') || 'send');
+      } else if (el.id === 'open-settings') {
+        el.title = t(key, vars);
       } else {
         el.textContent = t(key, vars);
       }
@@ -25,6 +40,7 @@
     if (topbarNewChat) {
       topbarNewChat.title = t('chat.newBtn', vars);
     }
+    updateBrandUI();
     if (state.ready) {
       renderQuick();
     }
@@ -108,7 +124,7 @@
     if (state.current) return state.current;
     const el = document.createElement('div');
     el.className = 'msg';
-    el.innerHTML = `<div class="avatar">🤖</div><div class="bubble"><div class="meta"><b>${state.agentName || 'Assistant'}</b><span>${now()}</span></div><div class="md cursor"></div></div>`;
+    el.innerHTML = `<div class="avatar">🤖</div><div class="bubble"><div class="meta"><b>${esc(state.agentName || 'Aurao')}</b><span>${now()}</span></div><div class="md cursor"></div></div>`;
     messages.appendChild(el);
     state.current = { el, body: el.querySelector('.md'), raw: '', rendered: false };
     scrollDown();
@@ -165,7 +181,7 @@
       el.innerHTML = '<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="label"></span><span class="secs" aria-hidden="true"></span>';
       working = { el, since: Date.now(), timer: setInterval(tickWorking, 1000) };
     }
-    working.el.querySelector('.label').textContent = t('working.' + key, {agent: state.agentName || 'Assistant'});
+    working.el.querySelector('.label').textContent = t('working.' + key, {agent: state.agentName || 'Aurao'});
     messages.appendChild(working.el); // always the last line
     tickWorking();
     scrollDown();
@@ -405,10 +421,10 @@
   function setBusy(busy) {
     state.busy = busy;
     sendBtn.classList.toggle('stop', busy);
-    sendBtn.textContent = busy ? '■' : '➤';
-    sendBtn.title = state.busy ? t('chat.stop') : t('chat.send');
+    sendBtn.textContent = busy ? (t('chat.stop') || 'stop') : (t('chat.send') || 'send');
+    sendBtn.title = busy ? (t('chat.stopTitle') || 'Stopp') : (t('chat.sendTitle') || 'Senden (Enter)');
     updateModelSelectState();
-    setStatus(busy ? 'busy' : state.ready ? 'ready' : '', busy ? t('status.busy', {agent: state.agentName || 'Assistant'}) : state.ready ? t('status.ready') : t('status.starting'));
+    setStatus(busy ? 'busy' : state.ready ? 'ready' : '', busy ? t('status.busy', {agent: state.agentName || 'Aurao'}) : state.ready ? t('status.ready') : t('status.starting'));
   }
 
   function send() {
@@ -699,7 +715,7 @@
       currentModel = r.model;
       state.configuredModel = r.model;
       if (r.restarted) { state.ready = false; finishAssistant(); setStatus('', t('status.changing_model')); }
-      else setStatus('ready', `${t('status.ready')} · ${modelSelect.selectedOptions[0]?.textContent || 'Standard'}`);
+      else setStatus('ready', t('status.ready'));
     } catch (err) {
       termLine(`Modellwechsel fehlgeschlagen: ${err.message || err}`, 'stderr');
       modelSelect.value = currentModel;
@@ -778,7 +794,7 @@
       case 'ready':
         if (state.ready) break;
         state.ready = true;
-        setStatus(state.busy ? 'busy' : 'ready', state.busy ? t('status.busy', {agent: state.agentName || 'Assistant'}) : t('status.ready'));
+        setStatus(state.busy ? 'busy' : 'ready', state.busy ? t('status.busy', {agent: state.agentName || 'Aurao'}) : t('status.ready'));
         refreshModels(state.configuredModel || '');
         break;
       case 'init':
@@ -786,7 +802,7 @@
         state.engineSkills = ev.skills || [];
         renderQuick();
         refreshModels(state.configuredModel || '');
-        setStatus(state.busy ? 'busy' : 'ready', state.busy ? t('status.busy', {agent: state.agentName || 'Assistant'}) : `${t('status.ready')} · ${ev.model}`);
+        setStatus(state.busy ? 'busy' : 'ready', state.busy ? t('status.busy', {agent: state.agentName || 'Aurao'}) : t('status.ready'));
         break;
       case 'turn_start':
         setBusy(true);
@@ -912,7 +928,7 @@
     if (!settingsDialog) return;
     const cfg = await api.getConfig();
     if (engineTypeSelect) engineTypeSelect.value = cfg.engineType || 'agy';
-    if (agentNameInput) agentNameInput.value = cfg.agentName || 'Assistant';
+    if (agentNameInput) agentNameInput.value = cfg.agentName || 'Aurao';
     if (personaSelectCfg) personaSelectCfg.value = cfg.persona || 'standard';
     if (languageSelectCfg) languageSelectCfg.value = cfg.language || i18n.getLang() || 'de';
     if (approvalModeSelectCfg) approvalModeSelectCfg.value = cfg.approvalMode || 'safe';
@@ -939,7 +955,15 @@
     else settingsDialog.removeAttribute('open');
   }
 
-  if (openSettingsBtn) openSettingsBtn.addEventListener('click', openSettings);
+  if (openSettingsBtn) {
+    openSettingsBtn.addEventListener('click', openSettings);
+    openSettingsBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openSettings();
+      }
+    });
+  }
   if (settingsCloseBtn) settingsCloseBtn.addEventListener('click', closeSettings);
   if (settingsCancelBtn) settingsCancelBtn.addEventListener('click', closeSettings);
 
@@ -973,7 +997,7 @@
 
       const newCfg = {
         engineType: engineTypeSelect ? engineTypeSelect.value : 'agy',
-        agentName: (agentNameInput ? agentNameInput.value.trim() : '') || 'Assistant',
+        agentName: (agentNameInput ? agentNameInput.value.trim() : '') || 'Aurao',
         persona: personaSelectCfg ? personaSelectCfg.value : 'standard',
         language: languageSelectCfg ? languageSelectCfg.value : 'de',
         approvalMode: approvalModeSelectCfg ? approvalModeSelectCfg.value : 'safe',
@@ -993,10 +1017,8 @@
       termLine(t('settings.saved'), 'info');
 
       const updated = await api.saveAllConfig(newCfg);
-      state.agentName = updated.agentName || 'Assistant';
-      document.title = state.agentName;
-      const brandTitle = document.querySelector('.brand-title');
-      if (brandTitle) brandTitle.textContent = state.agentName;
+      state.agentName = updated.agentName || 'Aurao';
+      updateBrandUI();
 
       if (updated.language && updated.language !== i18n.getLang()) {
         i18n.setLang(updated.language);
@@ -1139,7 +1161,7 @@
       console.error('Failed to switch session:', e);
       termLine(`Sitzungswechsel fehlgeschlagen: ${e.message || e}`, 'stderr');
     } finally {
-      setStatus('ready', '');
+      setStatus('ready', t('status.ready'));
     }
   }
 
@@ -1187,7 +1209,7 @@
     }
     const el = document.createElement('div');
     el.className = 'msg';
-    el.innerHTML = `<div class="avatar">🤖</div><div class="bubble"><div class="meta"><b>${esc(state.agentName || 'Assistant')}</b><span>${esc(timeStr || now())}</span></div><div class="md">${md.parse(text)}</div></div>`;
+    el.innerHTML = `<div class="avatar">🤖</div><div class="bubble"><div class="meta"><b>${esc(state.agentName || 'Aurao')}</b><span>${esc(timeStr || now())}</span></div><div class="md">${md.parse(text)}</div></div>`;
     messages.appendChild(el);
   }
 
@@ -1215,12 +1237,10 @@
   // ---------- boot ----------
   (async () => {
     const cfg = await api.getConfig();
-    state.agentName = cfg.agentName || 'Assistant';
+    state.agentName = cfg.agentName || 'Aurao';
     
     // Update static DOM elements with the dynamic agent name
-    document.title = state.agentName;
-    const brandTitle = document.querySelector('.brand-title');
-    if (brandTitle) brandTitle.textContent = state.agentName;
+    updateBrandUI();
 
     state.configuredModel = cfg.model || '';
     state.launchedWithSkip = Boolean(cfg.runtime && cfg.runtime.skipPermissions);
