@@ -112,10 +112,12 @@
     if (chatPinned) messages.scrollTop = messages.scrollHeight;
   };
 
+  const AURA_VISOR_SVG = `<svg class="aura-visor-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#67e8f9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="3"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg>`;
+
   function addUser(text) {
     const el = document.createElement('div');
     el.className = 'msg user';
-    el.innerHTML = `<div class="avatar">👤</div><div><div class="bubble">${refs.renderRefs(text)}</div><div class="meta" style="justify-content:flex-end;margin-top:4px">${now()}</div></div>`;
+    el.innerHTML = `<div class="user-msg-col"><div class="bubble">${refs.renderRefs(text)}</div><div class="msg-time">${now()}</div></div><div class="avatar user-avatar">👤</div>`;
     messages.appendChild(el);
     scrollDown(true);
   }
@@ -123,8 +125,8 @@
   function ensureAssistant() {
     if (state.current) return state.current;
     const el = document.createElement('div');
-    el.className = 'msg';
-    el.innerHTML = `<div class="avatar">🤖</div><div class="bubble"><div class="meta"><b>${esc(state.agentName || 'Aurao')}</b><span>${now()}</span></div><div class="md cursor"></div></div>`;
+    el.className = 'msg assistant';
+    el.innerHTML = `<div class="avatar aura-orb" title="${esc(state.agentName || 'Aurao')}">${AURA_VISOR_SVG}</div><div class="bubble"><div class="meta"><b>${esc(state.agentName || 'Aurao')}</b><span>${now()}</span></div><div class="md cursor"></div></div>`;
     messages.appendChild(el);
     state.current = { el, body: el.querySelector('.md'), raw: '', rendered: false };
     scrollDown();
@@ -1194,7 +1196,7 @@
     }
     const el = document.createElement('div');
     el.className = 'msg user';
-    el.innerHTML = `<div class="avatar">👤</div><div><div class="bubble">${refs.renderRefs(text)}</div><div class="meta" style="justify-content:flex-end;margin-top:4px">${esc(timeStr || now())}</div></div>`;
+    el.innerHTML = `<div class="user-msg-col"><div class="bubble">${refs.renderRefs(text)}</div><div class="msg-time">${esc(timeStr || now())}</div></div><div class="avatar user-avatar">👤</div>`;
     messages.appendChild(el);
   }
 
@@ -1208,8 +1210,8 @@
       }
     }
     const el = document.createElement('div');
-    el.className = 'msg';
-    el.innerHTML = `<div class="avatar">🤖</div><div class="bubble"><div class="meta"><b>${esc(state.agentName || 'Aurao')}</b><span>${esc(timeStr || now())}</span></div><div class="md">${md.parse(text)}</div></div>`;
+    el.className = 'msg assistant';
+    el.innerHTML = `<div class="avatar aura-orb" title="${esc(state.agentName || 'Aurao')}">${AURA_VISOR_SVG}</div><div class="bubble"><div class="meta"><b>${esc(state.agentName || 'Aurao')}</b><span>${esc(timeStr || now())}</span></div><div class="md">${md.parse(text)}</div></div>`;
     messages.appendChild(el);
   }
 
