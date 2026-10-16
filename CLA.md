@@ -1,6 +1,6 @@
-# Termi Contributor License Agreement (CLA)
+# Aurao Contributor License Agreement (CLA)
 
-Thank you for your interest in contributing to **Termi**!
+Thank you for your interest in contributing to **Aurao**!
 
 To clarify the intellectual property rights granted with contributions from any person or entity, Florian Schaider ("Project Owner") maintains this Contributor License Agreement ("CLA"). This agreement protects both you as a contributor and the users of the project.
 
@@ -10,14 +10,14 @@ By submitting a pull request, code, documentation, or other materials (collectiv
 
 ### 1. Definitions
 * **"You"** means the individual or legal entity submitting the Contribution.
-* **"Contribution"** means any original work of authorship, including modifications or additions to an existing work, submitted by You to the Project Owner for inclusion in Termi.
+* **"Contribution"** means any original work of authorship, including modifications or additions to an existing work, submitted by You to the Project Owner for inclusion in Aurao.
 
 ---
 
 ### 2. Grant of Copyright License
 You hereby grant to Florian Schaider a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare derivative works of, publicly display, publicly perform, sublicense, and distribute your Contributions and such derivative works.
 
-This includes the right for the Project Owner to license and distribute Termi (including your Contribution) under alternative terms, including commercial or dual-licensing agreements, while maintaining the primary open-source release under the GNU General Public License v3.0 (GPLv3).
+This includes the right for the Project Owner to license and distribute Aurao (including your Contribution) under alternative terms, including commercial or dual-licensing agreements, while maintaining the primary open-source release under the GNU General Public License v3.0 (GPLv3).
 
 ---
 

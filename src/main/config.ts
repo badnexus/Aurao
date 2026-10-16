@@ -17,7 +17,7 @@ const APPROVAL_MODES: ApprovalMode[] = ['ask', 'safe', 'bypass'];
 export interface PocConfig {
   /** The backend engine to use ('claude' for Claude SDK, 'agy' for Antigravity, 'gpts' for GPTS). */
   engineType: EngineType;
-  /** Name of the agent displayed in the UI. Defaults to 'Assistant'. */
+  /** Name of the agent displayed in the UI. Defaults to 'Aurao'. */
   agentName: string;
   /** Path to the workspace (CLAUDE.md, .claude/skills, project-map/, connectors/). */
   workspaceRepo: string;
@@ -57,6 +57,8 @@ export interface PocConfig {
   claudeExecutable?: string;
   /** Strip ANSI colour codes from the engine's stderr before it is shown in the Terminal view. Defaults to true. */
   sanitizeLogs?: boolean;
+  /** Show hidden dotfiles/folders (starting with '.') in My Workspace. Defaults to false. */
+  showHiddenFiles?: boolean;
 }
 
 // dist/main/config.js -> ../.. = POC root (inside app.asar when packaged)
@@ -66,12 +68,13 @@ const CONFIG_PATH = app.isPackaged ? path.join(app.getPath('userData'), 'config.
 
 const DEFAULTS: PocConfig = {
   engineType: 'claude',
-  agentName: 'Assistant',
+  agentName: 'Aurao',
   workspaceRepo: path.join(app.getPath('home'), '.my-agent-skills'),
   workspaceRoot: app.isPackaged ? app.getPath('documents') : path.resolve(POC_ROOT, '..'),
   greetOnStart: false,
   persona: 'standard',
   sanitizeLogs: true,
+  showHiddenFiles: false,
 };
 
 const ENGINE_TYPES: EngineType[] = ['claude', 'agy', 'gpts'];
@@ -102,6 +105,7 @@ export const USER_KEYS = [
   'effort',
   'claudeExecutable',
   'sanitizeLogs',
+  'showHiddenFiles',
 ] as const;
 
 function userOverrides(cfg: Partial<PocConfig>, bundled: Partial<PocConfig>): Partial<PocConfig> {
@@ -135,6 +139,7 @@ export function loadConfig(): PocConfig {
   if (typeof cfg.workspaceRoot !== 'string') cfg.workspaceRoot = DEFAULTS.workspaceRoot;
   if (typeof cfg.greetOnStart !== 'boolean') cfg.greetOnStart = DEFAULTS.greetOnStart;
   if (typeof cfg.sanitizeLogs !== 'boolean') cfg.sanitizeLogs = DEFAULTS.sanitizeLogs;
+  if (typeof cfg.showHiddenFiles !== 'boolean') cfg.showHiddenFiles = DEFAULTS.showHiddenFiles;
   if (cfg.workspaceGitUrl !== undefined && (typeof cfg.workspaceGitUrl !== 'string' || !cfg.workspaceGitUrl.trim())) delete cfg.workspaceGitUrl;
   if (cfg.availableModels !== undefined && !Array.isArray(cfg.availableModels)) delete cfg.availableModels;
   if (cfg.effort !== undefined && !EFFORTS.includes(cfg.effort)) delete cfg.effort;

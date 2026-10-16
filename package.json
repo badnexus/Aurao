@@ -1,8 +1,8 @@
 {
-  "name": "termi",
-  "productName": "Termi",
+  "name": "aurao",
+  "productName": "Aurao",
   "version": "0.2.0",
-  "description": "A friendly, cozy chat interface wrapper for powerful Agentic AI CLIs.",
+  "description": "Your friendly, safe desktop assistant for files, research, and everyday workflows.",
   "main": "dist/main/main.js",
   "scripts": {
     "prebuild": "node -e \"require('fs').mkdirSync('src/renderer/vendor',{recursive:true});require('fs').copyFileSync('node_modules/marked/lib/marked.umd.js','src/renderer/vendor/marked.umd.js')\"",
@@ -28,8 +28,8 @@
     "typescript": "^7.0.2"
   },
   "build": {
-    "appId": "com.example.termi",
-    "productName": "Termi",
+    "appId": "com.badnexus.aurao",
+    "productName": "Aurao",
     "directories": {
       "output": "release"
     },
@@ -47,8 +47,8 @@
       "target": "portable"
     },
     "portable": {
-      "artifactName": "Termi-${version}-portable.exe",
-      "unpackDirName": "Termi"
+      "artifactName": "Aurao-${version}.exe",
+      "unpackDirName": "Aurao"
     }
   },
   "private": "true"

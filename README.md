@@ -1,15 +1,15 @@
-# Termi — The Cozy Desktop Interface for Agentic AI
+# Aurao — Your Assistant for Everything
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Electron](https://img.shields.io/badge/Electron-44-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-7.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)]()
 
-<img width="100%" alt="Termi Assistant Interface" src="assets/Termi_Assistant.png" />
+<img width="100%" alt="Aurao Assistant Interface" src="assets/Aurao_Assistant.png" />
 
-**Termi** bridges the gap between powerful developer CLI agents and everyday desktop users. It wraps autonomous command-line agent frameworks—such as the **Google Antigravity CLI (`agy`)** and the **Anthropic Claude Agent SDK**—in a friendly, cozy chat window featuring human-in-the-loop safety cards, native drag-and-drop, and an optional jargon-free persona.
+**Aurao** is a safe, friendly desktop assistant for files, research, and everyday workflows. It brings the full power of autonomous agent frameworks—including the **Google Antigravity CLI (`agy`)** and the **Anthropic Claude Agent SDK**—to non-technical professionals, knowledge workers, and everyday users.
 
-> *I originally built Termi for my wife so she could harness the full power of autonomous agentic AI for research, document management, and workflows—without having to learn terminal commands, Git, or shell syntax. It worked so well that I realized millions of non-technical professionals and teams face the exact same barrier.*
+> *"I originally built Aurao for my wife so she could harness the full power of autonomous agentic AI for research, document management, and workflows—without having to learn terminal commands, Git, or shell syntax. It worked so well that I realized millions of non-technical professionals, researchers, and creators face the exact same barrier."*
 
 ---
 
@@ -17,36 +17,35 @@
 
 No installation, Node.js, or command line required:
 
-👉 **[Download the latest Termi Windows Portable (.exe)](https://github.com/badnexus/Termi/releases)**
+👉 **[Download the latest Aurao Windows Portable (.exe)](https://github.com/badnexus/Aurao/releases)**
 
-1. Download `Termi-vX.Y.Z-portable.exe` from the latest GitHub Release.
+1. Download `Aurao-vX.Y.Z.exe` from the latest GitHub Release.
 2. Run the executable anywhere (USB drive, Desktop, Downloads).
-3. Open the **Settings (`⚙️`)** menu in the top bar to verify your engine health and customize personas.
+3. Start chatting immediately, organize your folders, or summarize documents.
+4. Click the **Settings (`⚙️`)** icon in the top right to verify system readiness or configure custom models.
 
 ---
 
-## 🌟 Why Termi?
+## 🌟 Why Aurao?
 
-Autonomous AI CLI tools can edit files, run shell commands, analyze directories, and search the web. However, interacting with them via raw command prompts can be intimidating, verbose, and dangerous without visual guardrails.
+Autonomous AI CLI tools can edit files, run commands, analyze folders, and search the web. However, raw terminal prompts are intimidating, verbose, and risky without visual guardrails.
 
-Termi solves this by providing:
+Aurao reimagines agentic AI as a warm, human-centered companion:
 
-- ☕ **Familiar Chat & Zero Terminal Jargon:** Looks and feels like a modern messaging app. Switch between standard developer mode and a **Plain Language Persona** that replaces confusing technical terms (*repositories, APIs, YAML, CWD*) with friendly desktop concepts (*folders, documents, files*) and explains pending actions before executing them.
-- 🛡️ **Human-in-the-Loop Approval Cards (3 Modes):**
-  - **With Approval (`ask`):** Every single tool execution prompts an interactive card with clear **Approve** and **Deny** buttons.
-  - **Safe Changes (`safe`, default):** Read-only tools (viewing files, web search) run automatically; modifications and commands require your click.
-  - **Autopilot (`bypass`):** Full autonomous agent execution with an active visual warning badge.
-- 📂 **Native Drag & Drop File Explorer:** Built-in sidebar explorer lets you drag files, folders, and documents directly into the chat. Paths and references are automatically resolved and passed into the agent's context.
-- 📜 **Chat History & Session Resuming:** Revisit past conversations anytime via the **Verlauf (History)** tab. Features full visual Markdown rendering, message timestamps, keyword search, and a 1-click **New Chat** button.
-- ⚙️ **In-App Settings & Multi-Provider Diagnostics:** Full visual configuration for engines, models, reasoning effort, allowed tools, and workspace paths. Includes an automated health-check diagnostic modal for Google Antigravity (`agy`), Claude Agent SDK, and cloud providers.
-- 🔌 **Dual-Engine Architecture:** Pluggable engine layer supporting both Google Antigravity (`agy`) and the Anthropic Claude Agent SDK.
-- 🌐 **Bilingual (DE / EN):** Full user interface localization in English and German.
-
-### 🤖 In Action: Custom Personas & Agent Orchestration
-
-<img width="100%" alt="Bob-branded Termi Agent Orchestrator" src="assets/Bob_branded_Termi_Agent_Orchestrator.png" />
-
-*Termi in action configured as a custom agent orchestrator ("Bob") — managing autonomous workflows with visual approval cards, chat history, and plain-language desktop personas.*
+- 🎨 **Warm & Welcoming Design:** Soft glowing aura branding and zero technical jargon. Switch between a standard mode and a **Plain Language Persona** that replaces developer concepts (*repositories, APIs, YAML, CWD*) with familiar desktop terms (*folders, documents, files*).
+- 🛡️ **Zero-Risk Human-in-the-Loop Safety:**
+  - **● Safe Changes (`safe`, default):** Reading documents and web search happen smoothly; any file modification or script execution requires your explicit approval via interactive cards.
+  - **● Always Ask (`ask`):** Prompts for approval before every single action.
+  - **● Without Approval (`bypass`):** Full autonomous mode with an unmistakable safety banner.
+- 📁 **My Workspace with Clean View:**
+  - Quick-access jump buttons for **🖥️ Desktop**, **📄 Documents**, and **📥 Downloads**.
+  - System dotfiles (`.config`, `.cache`, `.git`) are hidden by default, keeping your folders clean and distraction-free.
+  - Drag and drop any document or folder into the chat to immediately discuss or process it.
+- 🧠 **Second Brain & Knowledge Work Integration:** Effortlessly summarize folders of PDFs, sort messy downloads into categories, and update personal research notes (Obsidian / Markdown vaults).
+- ⚡ **Transparent Actions View:** Replaces raw developer terminals with a clear, readable activity log so you can always see what Aurao did behind the scenes.
+- 📜 **Chat History & Session Resuming:** Revisit past conversations anytime via the **Verlauf (History)** tab with full Markdown formatting and quick keyword search.
+- ⚙️ **Dynamically Rebrandable & Extensible:** Prefer a custom name like "Bob" or "Jarvis"? Customize the assistant name, persona, models, and approval rules directly in `config.json` or the Settings dialog.
+- 🌐 **Bilingual (DE / EN):** Complete native localization in German and English.
 
 ---
 
@@ -62,8 +61,8 @@ If you want to run from source or contribute:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/badnexus/Termi.git
-cd Termi
+git clone https://github.com/badnexus/Aurao.git
+cd Aurao
 
 # 2. Install dependencies
 npm install
@@ -75,28 +74,29 @@ npm start
 npm run dist
 ```
 
-Built executables and checksums will be generated in the `release/` directory.
+Built executables and SHA-256 verification hashes are written to the `release/` directory.
 
 ---
 
 ## 🏗️ Architecture
 
-Termi is built with Electron and TypeScript using a clean separation of concerns:
+Aurao is built with Electron and TypeScript using a clean separation of concerns:
 
 - `src/main/IEngine.ts` — Common engine interface abstraction.
-- `src/main/AgyEngine.ts` — Antigravity CLI subprocess orchestration, dynamic model discovery (`agy models`), and hook bridges.
+- `src/main/AgyEngine.ts` — Google Antigravity CLI subprocess orchestration, dynamic model discovery, and hook bridges.
 - `src/main/ClaudeEngine.ts` — Claude Agent SDK integration and lifecycle management.
-- `src/main/sessions.ts` — Native session state querying (SQLite & SDK transcripts) and history reconstruction.
-- `src/main/persona.ts` — Persona system and plain-language terminology translation layer.
-- `src/preload/preload.ts` — Secure context-isolated IPC bridge.
-- `src/renderer/` — Reactive UI, Markdown rendering, approval card components, and multi-view navigation.
+- `src/main/files.ts` — Clean file system navigation with hidden dotfile filtering and quick jump directories.
+- `src/main/sessions.ts` — Native session querying and transcript history reconstruction.
+- `src/main/persona.ts` — Plain-language desktop persona prompts.
+- `src/preload/preload.ts` — Secure context-isolated IPC bridge (`window.aurao` with `window.termi` alias).
+- `src/renderer/` — Reactive UI, glowing aura components, Markdown parsing, and approval cards.
 
 ---
 
 ## ⚖️ License & Dual-Licensing
 
-Termi is free open-source software, licensed under the **GNU General Public License v3.0 (GPLv3)**.
+Aurao is free open-source software, licensed under the **GNU General Public License v3.0 (GPLv3)**.
 
-- **Community & Personal Use:** You are free to run, study, share, and modify Termi under the terms of the GPLv3. Any distributed modifications must also remain open source under the GPLv3.
+- **Community & Personal Use:** You are free to run, study, share, and modify Aurao under the terms of the GPLv3. Any distributed modifications must also remain open source under the GPLv3.
 - **Contributions:** We welcome community contributions! Contributing requires accepting our lightweight [Contributor License Agreement (CLA)](CLA.md).
-- **Commercial & Enterprise Licensing:** If you or your organization wish to integrate or distribute Termi without the copyleft obligations of the GPLv3 (e.g., in a proprietary corporate deployment or embedded within a closed-source solution), commercial licenses are available. Please contact Florian Schaider to discuss options.
+- **Commercial & Enterprise Licensing:** If you or your organization wish to integrate or distribute Aurao without the copyleft obligations of the GPLv3 (e.g., in a proprietary corporate deployment or embedded within a closed-source solution), commercial licenses are available. Please contact Florian Schaider to discuss options.

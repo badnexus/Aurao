@@ -1,8 +1,9 @@
 {
   "engineType": "agy",
-  "agentName": "Assistant",
+  "agentName": "Aurao",
   "greetOnStart": false,
   "persona": "standard",
   "approvalMode": "safe",
-  "sanitizeLogs": true
+  "sanitizeLogs": true,
+  "showHiddenFiles": false
 }

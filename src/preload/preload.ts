@@ -44,5 +44,7 @@ const api = {
   },
 };
 
+contextBridge.exposeInMainWorld('aurao', api);
 contextBridge.exposeInMainWorld('termi', api);
+export type AuraoApi = typeof api;
 export type TermiApi = typeof api;
