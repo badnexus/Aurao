@@ -231,7 +231,10 @@ export async function getClaudeSessionHistory(sessionId: string): Promise<Histor
 }
 
 /**
- * Rolling context summarization:
+ * Rolling context summarization (not applied anywhere yet): Termi never assembles the model's
+ * message history itself - the Claude SDK and agy own their transcripts - and the History view
+ * must show what was said verbatim. Kept for a future path that really builds an LLM payload.
+ *
  * For commands older than keepTurns (default 3) that completed successfully (exit code 0),
  * replace the raw stdout in the message text with [System: Command executed successfully. Output hidden.].
  */
@@ -286,16 +289,8 @@ export async function listSessions(engineType: string, cwd?: string): Promise<Se
   return [];
 }
 
-export async function getSessionHistory(
-  engineType: string,
-  sessionId: string,
-  options?: { keepTurns?: number; sanitizeLogs?: boolean },
-): Promise<HistoricalMessage[]> {
-  let history: HistoricalMessage[] = [];
-  if (engineType === 'agy') {
-    history = getAgySessionHistory(sessionId);
-  } else if (engineType === 'claude') {
-    history = await getClaudeSessionHistory(sessionId);
-  }
-  return summarizeRollingContext(history, options?.keepTurns ?? 3, options?.sanitizeLogs ?? true);
+export async function getSessionHistory(engineType: string, sessionId: string): Promise<HistoricalMessage[]> {
+  if (engineType === 'agy') return getAgySessionHistory(sessionId);
+  if (engineType === 'claude') return getClaudeSessionHistory(sessionId);
+  return [];
 }

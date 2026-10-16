@@ -10,8 +10,8 @@ const ANSI_REGEX = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-
 const OSC_REGEX = /\u001b\][^\u0007\u001b]*(?:\u0007|\u001b\\)/g;
 
 // Common CLI noise: ASCII progress bars like [=====>    ], spinners, tqdm bars
-const PROGRESS_BAR_REGEX = /\[[=\->\s#*]{5,}\]\s*(?:\d{1,3}%)?/g;
-const UNICODE_PROGRESS_REGEX = /\|\s*[█▎▍▌▋▊▉\s]{5,}\s*\|\s*(?:\d{1,3}%)?/g;
+const PROGRESS_BAR_REGEX = /\[[=\-> \t#*]{5,}\][ \t]*(?:\d{1,3}%)?/g;
+const UNICODE_PROGRESS_REGEX = /\|[ \t]*[█▎▍▌▋▊▉ \t]{5,}[ \t]*\|[ \t]*(?:\d{1,3}%)?/g;
 const SPINNER_CHARS_REGEX = /[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏]/g;
 
 export interface TruncationOptions {

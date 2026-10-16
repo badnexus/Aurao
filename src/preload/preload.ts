@@ -33,11 +33,6 @@ const api = {
     ipcRenderer.on('engine:event', listener);
     return () => ipcRenderer.off('engine:event', listener);
   },
-  onTerminalStreamChunk: (cb: (chunk: string) => void) => {
-    const listener = (_e: Electron.IpcRendererEvent, chunk: string) => cb(chunk);
-    ipcRenderer.on('terminal-stream-chunk', listener);
-    return () => ipcRenderer.off('terminal-stream-chunk', listener);
-  },
   // Deterministic: a file dropped from Windows Explorer becomes its absolute path. No model call.
   pathForFile: (file: File) => webUtils.getPathForFile(file),
   // Dev aids (screenshot mode): switch view / echo an auto-sent message into the chat.

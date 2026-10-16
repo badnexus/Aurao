@@ -28,12 +28,7 @@ function sendToUi(ev: EngineEvent): void {
   // Dev aid: TERMI_LOG=<file> appends every engine event, for runs without a human at the screen.
   const devLog = process.env.TERMI_LOG;
   if (devLog) fs.appendFileSync(devLog, `${new Date().toISOString()} ${JSON.stringify(ev)}\n`, 'utf8');
-  if (win && !win.isDestroyed()) {
-    win.webContents.send('engine:event', ev);
-    if (ev.kind === 'terminal_chunk') {
-      win.webContents.send('terminal-stream-chunk', ev.chunk);
-    }
-  }
+  if (win && !win.isDestroyed()) win.webContents.send('engine:event', ev);
 }
 
 function logToFile(text: string): void {
@@ -461,7 +456,7 @@ ipcMain.handle('sessions:list', async () => {
 ipcMain.handle('sessions:current', () => currentConversationId);
 ipcMain.handle('sessions:getHistory', async (_e, conversationId: string) => {
   try {
-    return await getSessionHistory(cfg.engineType, conversationId, { sanitizeLogs: cfg.sanitizeLogs !== false });
+    return await getSessionHistory(cfg.engineType, conversationId);
   } catch (e) {
     sendToUi({ kind: 'terminal', line: `Get session history error: ${String(e)}`, level: 'stderr' });
     return [];

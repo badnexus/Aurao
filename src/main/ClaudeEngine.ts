@@ -12,7 +12,7 @@ import { assistantTerminalLines, describeTool, summarizeToolResult } from './Eng
 import type { ApprovalMode } from './config';
 import { t } from './i18n';
 import { StreamAccumulator } from './StreamAccumulator';
-import { sanitizeForLlm } from './LogSanitizer';
+import { stripAnsi } from './LogSanitizer';
 import type {
   CanUseTool,
   Options,
@@ -71,9 +71,11 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
   private turnActive = false;
   private approvalMode: ApprovalMode = 'safe';
 
+  // stderr arrives in bursts: batch it (60 ms) so the UI gets one IPC message per batch, not per fragment.
+  // Terminal view only; with sanitizeLogs the ANSI colour codes are stripped. Nothing here reaches the model.
   private stderrAccumulator = new StreamAccumulator((chunk) => {
-    this.emitEvent({ kind: 'terminal_chunk', chunk, level: 'stderr' });
-    for (const line of chunk.split(/\r?\n/).filter((l) => l.trim())) {
+    const text = this.opts.sanitizeLogs !== false ? stripAnsi(chunk) : chunk;
+    for (const line of text.split(/\r?\n/).filter((l) => l.trim())) {
       this.emitEvent({ kind: 'terminal', line, level: 'stderr' });
     }
   }, 60);
@@ -125,8 +127,7 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
   send(text: string): void {
     this.turnActive = true;
     this.emitEvent({ kind: 'terminal', line: `> ${text.replace(/\s+/g, ' ').slice(0, 200)}`, level: 'info' });
-    const sanitized = sanitizeForLlm(text, this.opts.sanitizeLogs !== false);
-    this.queue.push({ type: 'user', message: { role: 'user', content: sanitized }, parent_tool_use_id: null });
+    this.queue.push({ type: 'user', message: { role: 'user', content: text }, parent_tool_use_id: null });
   }
 
   async interrupt(): Promise<void> {
