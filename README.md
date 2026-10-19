@@ -8,7 +8,7 @@
 > Aurao helps you organize messy folders, summarize piles of PDFs, conduct web research, and draft reports right on your desktop, with total safety and zero technical jargon.
 
 <p align="center">
-  <img width="85%" alt="Aurao Desktop Assistant Interface" src="assets/Aurao_Assistant.png" />
+  <img width="85%" alt="Aurao Desktop Assistant in Action (Organizing files with 1-click approval)" src="assets/Aurao_Demo.gif" />
 </p>
 
 <p align="center">
