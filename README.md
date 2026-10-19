@@ -1,73 +1,120 @@
-# Aurao — Your Assistant for Everything
+# Aurao — Your Friendly Desktop Assistant for Files, Research & Everyday Work
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
-[![Electron](https://img.shields.io/badge/Electron-44-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-7.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)]()
+[![Platform](https://img.shields.io/badge/Platform-Windows%20Portable%20%7C%20Linux%20%7C%20macOS-47848F)]()
+[![No Terminal Required](https://img.shields.io/badge/Skill%20Level-No%20Coding%20Required-brightgreen)]()
 
-<img width="100%" alt="Aurao Assistant Interface" src="assets/Aurao_Assistant.png" />
+> **The power of autonomous AI agents — without the command line.**  
+> Aurao helps you organize messy folders, summarize piles of PDFs, conduct web research, and draft reports right on your desktop, with total safety and zero technical jargon.
 
-**Aurao** is a safe, friendly desktop assistant for files, research, and everyday workflows. It brings the full power of autonomous agent frameworks—including the  **Open AI Codex CLI**, **Google Antigravity CLI (`agy`)** and the **Anthropic Claude Agent SDK**—to non-technical professionals, knowledge workers, and everyday users.
+<p align="center">
+  <img width="85%" alt="Aurao Desktop Assistant Interface" src="assets/Aurao_Assistant.png" />
+</p>
 
-> *"I originally built Aurao for my wife so she could harness the full power of autonomous agentic AI for research, document management, and workflows—without having to learn terminal commands, Git, or shell syntax. It worked so well that I realized millions of non-technical professionals, researchers, and creators face the exact same barrier."*
-
----
-
-## 🚀 Quick Start (Windows Portable)
-
-No installation, Node.js, or command line required:
-
-👉 **[Download the latest Aurao Windows Portable (.exe)](https://github.com/badnexus/Aurao/releases)**
-
-1. Download `Aurao-vX.Y.Z.exe` from the latest GitHub Release.
-2. Run the executable anywhere (USB drive, Desktop, Downloads).
-3. Start chatting immediately, organize your folders, or summarize documents.
-4. Click the **Settings (`⚙️`)** icon in the top right to verify system readiness or configure custom models.
+<p align="center">
+  <a href="https://github.com/badnexus/Aurao/releases">
+    <img src="https://img.shields.io/badge/⬇️%20Download%20Aurao%20for%20Windows-Portable%20(.exe)-success?style=for-the-badge&logo=windows" alt="Download Aurao Portable" />
+  </a>
+</p>
+<p align="center"><em>No installer, no Node.js, no terminal commands. Just download and run.</em></p>
 
 ---
 
-## 🌟 Why Aurao?
+## 💡 Why Aurao?
 
-Autonomous AI CLI tools can edit files, run commands, analyze folders, and search the web. However, raw terminal prompts are intimidating, verbose, and risky without visual guardrails.
+Modern AI agents can read files, write documents, and search the web. But until now, they were trapped inside **developer terminals** — black command-line windows full of cryptic errors, code syntax, and the constant fear of accidentally deleting something important.
 
-Aurao reimagines agentic AI as a warm, human-centered companion:
+**Aurao changes that.** It wraps cutting-edge autonomous AI engines (including the **OpenAI Codex CLI**, **Google Antigravity (`agy`)**, and Anthropic's **Claude Agent SDK**) into a calm, welcoming desktop application designed for everyday people.
 
-- 🎨 **Warm & Welcoming Design:** Soft glowing aura branding and zero technical jargon. Switch between a standard mode and a **Plain Language Persona** that replaces developer concepts (*repositories, APIs, YAML, CWD*) with familiar desktop terms (*folders, documents, files*).
-- 🛡️ **Zero-Risk Human-in-the-Loop Safety:**
-  - **● Safe Changes (`safe`, default):** Reading documents and web search happen smoothly; any file modification or script execution requires your explicit approval via interactive cards.
-  - **● Always Ask (`ask`):** Prompts for approval before every single action.
-  - **● Without Approval (`bypass`):** Full autonomous mode with an unmistakable safety banner.
-- 📁 **My Workspace with Clean View:**
-  - Quick-access jump buttons for **🖥️ Desktop**, **📄 Documents**, and **📥 Downloads**.
-  - System dotfiles (`.config`, `.cache`, `.git`) are hidden by default, keeping your folders clean and distraction-free.
-  - Drag and drop any document or folder into the chat to immediately discuss or process it.
-- 🧠 **Second Brain & Knowledge Work Integration:** Effortlessly summarize folders of PDFs, sort messy downloads into categories, and update personal research notes (Obsidian / Markdown vaults).
-- ⚡ **Transparent Actions View:** Replaces raw developer terminals with a clear, readable activity log so you can always see what Aurao did behind the scenes.
-- 📜 **Chat History & Session Resuming:** Revisit past conversations anytime via the **Verlauf (History)** tab with full Markdown formatting and quick keyword search.
-- ⚙️ **Dynamically Rebrandable & Extensible:** Prefer a custom name like "Bob" or "Jarvis"? Customize the assistant name, persona, models, and approval rules directly in `config.json` or the Settings dialog.
-- 🌐 **Bilingual (DE / EN):** Complete native localization in German and English.
+> *"I originally built Aurao for my wife so she could harness the full power of autonomous agentic AI for research, document management, and everyday work—without touching a terminal or learning code. It worked so well that we realized millions of professionals, researchers, and creators face the exact same barrier."*
 
 ---
 
-## 🛠️ Building & Running from Source
+## ✨ What You Can Do in 5 Minutes
 
-If you want to run from source or contribute:
+| Everyday Task | How Aurao Solves It |
+| :--- | :--- |
+| 📁 **Clean Messy Folders** | Drag your cluttered *Downloads* or *Desktop* folder into Aurao. Ask: *"Sort these files into folders by year and topic."* |
+| 📑 **Summarize Stacks of Documents** | Drop 20 PDF reports or notes into the chat. Ask: *"Compare the key findings and write a 1-page executive summary."* |
+| 🔍 **In-Depth Web Research** | Give Aurao a topic. It browses, verifies sources, and writes a complete briefing directly to your *Documents* folder. |
+| ✍️ **Draft & Edit Without Copy-Pasting** | Unlike web chatbots where you constantly copy and paste text back and forth, Aurao directly creates and edits documents on your computer. |
+
+---
+
+## 🛡️ Complete Control: You Are Always in the Driver's Seat
+
+Letting an AI touch your files can feel daunting. That is why Aurao was engineered around **Human-in-the-Loop Safety** from day one:
+
+- 🟢 **Clear Approval Cards:** Aurao **never** modifies or deletes a file without showing you an easy-to-read card. You see exactly what is about to change, and you click **Approve** or **Decline**.
+- 🚦 **Safety Modes Tailored to You:**
+  - **● Safe Changes (Default):** Aurao reads documents and searches the web freely, but pauses and asks for your approval before saving or altering any file.
+  - **● Always Ask:** Prompts you before every single action for maximum oversight.
+  - **● Autonomous Mode:** For power users who want hands-free automated batch workflows.
+- 🔒 **Your Files Stay on Your Computer:** Aurao runs locally on your desktop. Your local files are never uploaded to hidden third-party storage or public training datasets.
+
+---
+
+## ⚡ How Aurao Compares
+
+| Feature | Standard Web Chat (ChatGPT/Claude.ai) | Developer CLI (Terminal Agents) | **Aurao Desktop** |
+| :--- | :---: | :---: | :---: |
+| **Works with Local Files & Folders** | ❌ (Manual upload only) | ✅ Yes | 🌟 **Yes (Drag & Drop)** |
+| **No Coding or Terminal Knowledge** | ✅ Yes | ❌ (Requires CLI / Git) | 🌟 **Yes (Zero Jargon)** |
+| **Visual One-Click File Approvals** | ❌ None | ❌ (Text prompts) | 🌟 **Interactive Cards** |
+| **Portable & Zero-Install** | N/A (Web only) | ❌ Complex setup | 🌟 **Single .exe (USB-ready)** |
+| **Direct Document Editing** | ❌ Copy-paste required | ✅ Yes | 🌟 **Native File Generation** |
+
+---
+
+## 🚀 Quick Start Guide (Windows)
+
+1. **Download:** Grab the latest `Aurao-vX.Y.Z.exe` from the [Releases page](https://github.com/badnexus/Aurao/releases).
+2. **Launch:** Double-click the file. (No installation, Python, or administrator rights required!).
+3. **Connect Your Assistant:** Click the **Settings (`⚙️`)** icon in the top right to select your preferred AI model or enter your API key.
+4. **Get to Work:** Drag any document or folder into the window and start chatting!
+
+*(Supports Windows 10 & 11. macOS and Linux builds are available from source.)*
+
+---
+
+## ❓ Frequently Asked Questions (FAQ)
+
+### What is Aurao?
+Aurao is an open-source, user-friendly desktop application for Windows, macOS, and Linux that allows non-technical users to run autonomous AI agents. It provides a visual interface for complex file management, multi-document research, and desktop automation without requiring command-line skills.
+
+### Do I need to be a programmer or know how to code?
+**Not at all.** Aurao was specifically built for non-programmers. It features a Plain Language Persona that avoids technical jargon (no mentions of "APIs", "repositories", or "command lines") and replaces them with everyday desktop concepts like folders, files, and one-click approvals.
+
+### Can Aurao accidentally delete my files?
+**No.** By default, Aurao operates in "Safe Changes" mode. Whenever the assistant wants to create, edit, or delete a file, it presents a clear Approval Card explaining what will happen. The file is only modified after you click **Approve**.
+
+### How does Aurao connect to AI models?
+Aurao connects to leading autonomous agent frameworks, including the **OpenAI Codex CLI**, **Google Antigravity (`agy`)**, and Anthropic's **Claude Agent SDK**. You can connect it via your existing API key or local setup in the Settings dialog.
+
+### Is Aurao free and open source?
+Yes! Aurao is licensed under the GNU General Public License v3.0 (GPLv3). You are free to download, use, and share it.
+
+---
+
+## 👨‍💻 For Developers & Power Users
+
+<details>
+<summary><strong>Click here to view Architecture, Source Build & Contributing instructions</strong></summary>
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) v22+
-- Either the **Google Antigravity CLI (`agy`)** or Anthropic API credentials configured.
+- Either the **OpenAI Codex CLI**, **Google Antigravity CLI (`agy`)**, or Anthropic API credentials configured.
 
-### Quick Commands
-
+### Building from Source
 ```bash
-# 1. Clone the repository
+# 1. Clone repository
 git clone https://github.com/badnexus/Aurao.git
 cd Aurao
 
 # 2. Install dependencies
 npm install
 
-# 3. Run in development mode
+# 3. Run development mode
 npm start
 
 # 4. Package standalone Windows Portable executable
@@ -76,13 +123,10 @@ npm run dist
 
 Built executables and SHA-256 verification hashes are written to the `release/` directory.
 
----
-
-## 🏗️ Architecture
-
+### Architecture Overview
 Aurao is built with Electron and TypeScript using a clean separation of concerns:
-
 - `src/main/IEngine.ts` — Common engine interface abstraction.
+- `src/main/GptsEngine.ts` — OpenAI Codex CLI app-server subprocess orchestration.
 - `src/main/AgyEngine.ts` — Google Antigravity CLI subprocess orchestration, dynamic model discovery, and hook bridges.
 - `src/main/ClaudeEngine.ts` — Claude Agent SDK integration and lifecycle management.
 - `src/main/files.ts` — Clean file system navigation with hidden dotfile filtering and quick jump directories.
@@ -91,12 +135,11 @@ Aurao is built with Electron and TypeScript using a clean separation of concerns
 - `src/preload/preload.ts` — Secure context-isolated IPC bridge (`window.aurao` with `window.termi` alias).
 - `src/renderer/` — Reactive UI, glowing aura components, Markdown parsing, and approval cards.
 
+### License & Commercial Inquiries
+Aurao is distributed under the **GPLv3**. Commercial dual-licensing options are available for proprietary enterprise distributions. See [LICENSE](LICENSE) and [CLA.md](CLA.md) for details.
+
+</details>
+
 ---
 
-## ⚖️ License & Dual-Licensing
-
-Aurao is free open-source software, licensed under the **GNU General Public License v3.0 (GPLv3)**.
-
-- **Community & Personal Use:** You are free to run, study, share, and modify Aurao under the terms of the GPLv3. Any distributed modifications must also remain open source under the GPLv3.
-- **Contributions:** We welcome community contributions! Contributing requires accepting our lightweight [Contributor License Agreement (CLA)](CLA.md).
-- **Commercial & Enterprise Licensing:** If you or your organization wish to integrate or distribute Aurao without the copyleft obligations of the GPLv3 (e.g., in a proprietary corporate deployment or embedded within a closed-source solution), commercial licenses are available. Please contact Florian Schaider to discuss options.
+<p align="center">Made with ❤️ for everyone who wants AI that gets real work done.</p>
