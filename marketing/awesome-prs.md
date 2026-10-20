@@ -9,6 +9,7 @@ Awesome lists on GitHub are the highest-converting passive discovery channel for
 | Repository | Stars | Target File & Section | Status & Live PR Link |
 | :--- | :---: | :--- | :--- |
 | **`e2b-dev/awesome-ai-agents`** | ★ 30.5k | `README.md` → `# Open-source projects` (Alphabetical under **A**) | 🟢 **Submitted:** [PR #1809](https://github.com/e2b-dev/awesome-ai-agents/pull/1809) |
+| **`travisvn/awesome-claude-skills`** | ★ 15.5k | `README.md` → `## 🌟 Community Skills` → `### Tools` | 🟢 **Submitted:** [PR #1342](https://github.com/travisvn/awesome-claude-skills/pull/1342) |
 | **`steven2358/awesome-generative-ai`** | ★ 12.7k | `DISCOVERIES.md` → `## Agents` → `### Autonomous agents` | 🟢 **Submitted:** [PR #1769](https://github.com/steven2358/awesome-generative-ai/pull/1769) |
 | **`mahseema/awesome-ai-tools`** | ★ 6.4k | `README.md` → `## Text` → `### Productivity` | 🟢 **Submitted:** [PR #2485](https://github.com/mahseema/awesome-ai-tools/pull/2485) |
 | **`caramaschiHG/awesome-ai-agents-2026`** | ★ 2.0k | `README.md` → `## 🌐 Browser and Desktop Agents` → `### Consumer Products` | 🟢 **Submitted:** [PR #679](https://github.com/caramaschiHG/awesome-ai-agents-2026/pull/679) |
