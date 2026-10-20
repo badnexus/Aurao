@@ -12,6 +12,7 @@ Awesome lists on GitHub are the highest-converting passive discovery channel for
 | **`steven2358/awesome-generative-ai`** | ★ 12.7k | `DISCOVERIES.md` → `## Agents` → `### Autonomous agents` | 🟢 **Submitted:** [PR #1769](https://github.com/steven2358/awesome-generative-ai/pull/1769) |
 | **`mahseema/awesome-ai-tools`** | ★ 6.4k | `README.md` → `## Text` → `### Productivity` | 🟢 **Submitted:** [PR #2485](https://github.com/mahseema/awesome-ai-tools/pull/2485) |
 | **`caramaschiHG/awesome-ai-agents-2026`** | ★ 2.0k | `README.md` → `## 🌐 Browser and Desktop Agents` → `### Consumer Products` | 🟢 **Submitted:** [PR #679](https://github.com/caramaschiHG/awesome-ai-agents-2026/pull/679) |
+| **`microsoft/winget-pkgs`** | ★ 11.2k | `manifests/b/badnexus/Aurao/0.3.0/` (3-file `1.12.0` portable manifest) | 🟢 **Submitted:** [PR #457272](https://github.com/microsoft/winget-pkgs/pull/457272) |
 
 ---
 
