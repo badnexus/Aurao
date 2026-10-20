@@ -1,95 +1,53 @@
 # Aurao Awesome-List PRs & Directory Submission Playbook
 
-Awesome lists on GitHub are the highest-converting passive discovery channel for open-source AI desktop tools. Below are exact, style-compliant entries and Pull Request descriptions for the top 6 lists plus 3 high-authority software directories.
+Awesome lists on GitHub are the highest-converting passive discovery channel for open-source AI desktop tools. Below is the live tracker of submitted Pull Requests, exact Web Form fields for `awesome-claude-code`, and structured directory submission copy.
 
 ---
 
-## 1. `hesreallyhim/awesome-claude-code`
-- **Repository:** `https://github.com/hesreallyhim/awesome-claude-code`
-- **Target Section:** `Clients / GUIs / IDE Integrations` (or `Tools & Utilities`)
-- **Markdown Entry to Insert:**
-```markdown
-- [Aurao](https://github.com/badnexus/Aurao) - A friendly, zero-jargon desktop GUI wrapper for the Claude Agent SDK, OpenAI Codex CLI, and Google Antigravity with visual 1-click Human-in-the-Loop file approval cards.
-```
-- **PR Title:**
-```text
-Add Aurao (zero-jargon desktop GUI with 1-click approval cards)
-```
-- **PR Body:**
-```markdown
-## Summary
-Adds **[Aurao](https://github.com/badnexus/Aurao)** to the GUI / Clients section.
+## Live Pull Request Tracker (Tier 1 — Submitted 2026-10-20)
 
-## What is Aurao?
-Aurao is an open-source (GPLv3) Electron + TypeScript desktop wrapper built around `@anthropic-ai/claude-agent-sdk` (as well as OpenAI Codex CLI and Google Antigravity) designed so non-developers, researchers, and everyday users can work with Claude Code on local folders without touching the terminal.
-
-Key highlights:
-- Visual **1-click Human-in-the-Loop Approval Cards** (`Safe Changes`, `Always Ask`, `Autonomous`) via pre-tool hooks.
-- **Plain-Language Persona** that strips terminal/Git jargon for everyday desktop workflows.
-- Single-file Windows Portable `.exe` (`Aurao-0.3.0.exe`) + cross-platform source build.
-```
+| Repository | Stars | Target File & Section | Status & Live PR Link |
+| :--- | :---: | :--- | :--- |
+| **`e2b-dev/awesome-ai-agents`** | ★ 30.5k | `README.md` → `# Open-source projects` (Alphabetical under **A**) | 🟢 **Submitted:** [PR #1809](https://github.com/e2b-dev/awesome-ai-agents/pull/1809) |
+| **`steven2358/awesome-generative-ai`** | ★ 12.7k | `DISCOVERIES.md` → `## Agents` → `### Autonomous agents` | 🟢 **Submitted:** [PR #1769](https://github.com/steven2358/awesome-generative-ai/pull/1769) |
+| **`mahseema/awesome-ai-tools`** | ★ 6.4k | `README.md` → `## Text` → `### Productivity` | 🟢 **Submitted:** [PR #2485](https://github.com/mahseema/awesome-ai-tools/pull/2485) |
+| **`caramaschiHG/awesome-ai-agents-2026`** | ★ 2.0k | `README.md` → `## 🌐 Browser and Desktop Agents` → `### Consumer Products` | 🟢 **Submitted:** [PR #679](https://github.com/caramaschiHG/awesome-ai-agents-2026/pull/679) |
 
 ---
 
-## 2. `e2b-dev/awesome-ai-agents`
-- **Repository:** `https://github.com/e2b-dev/awesome-ai-agents`
-- **Target Section:** `Open-source projects` (alphabetical under **A**)
-- **Markdown Entry to Insert:**
-```markdown
-### [Aurao](https://github.com/badnexus/Aurao)
-A friendly, safe desktop assistant that wraps autonomous CLI agents (Anthropic Claude Agent SDK, OpenAI Codex CLI, and Google Antigravity) into a visual workspace with 1-click file approval cards and zero terminal jargon.
-- **Category**: Desktop Assistant, File Management, Productivity, Multi-Engine Wrapper
-- **License**: GPL-3.0
-- **Website**: https://badnexus.github.io/Aurao/
-```
-- **PR Title:**
-```text
-Add Aurao: Open-source desktop GUI for local CLI AI agents
-```
+## Tier 2: Special Protocol / Time-Gated Lists
+
+### 1. `hesreallyhim/awesome-claude-code` (★ 56.1k) — Web UI Issue Form (Submit After `21:42 CET` on 2026-10-20)
+
+- **Why Web Form Only:** `CONTRIBUTING.md` strictly forbids Pull Requests and automated CLI/bot submissions. Their bot (`validate-new-issue.yml`) verifies `ageDays >= 14.0` since the first commit (`2026-10-06 21:41:22 +0200`), which crosses `14.0` days at **`21:42 CET` on 2026-10-20**.
+- **Submission Form URL:** `https://github.com/hesreallyhim/awesome-claude-code/issues/new?template=recommend-resource.yml`
+- **Exact Fields to Copy-Paste:**
+  - **Title:** `[Resource]: Aurao`
+  - **Display Name:** `Aurao`
+  - **Category:** `Alternative Clients`
+  - **Link:** `https://github.com/badnexus/Aurao`
+  - **Author Name:** `Florian Schaider`
+  - **Author Link:** `https://github.com/badnexus`
+  - **Description (descriptive, 1-line, no emojis):**
+    ```text
+    An open-source desktop GUI client for the Claude Agent SDK that replaces terminal prompts with visual one-click file approval cards, a drag-and-drop workspace explorer, session history restoration, and a plain-language persona.
+    ```
+  - **Checklist:** Check the **first 5 boxes ONLY** — **leave the 6th box UNCHECKED** (it is a honeypot checkbox: *"Do not check the following box - leave it unchecked"*).
 
 ---
 
-## 3. `steven2358/awesome-generative-ai`
-- **Repository:** `https://github.com/steven2358/awesome-generative-ai`
-- **Target Section:** `Autonomous Agents & Assistants` / `Desktop Applications`
-- **Markdown Entry to Insert:**
-```markdown
-* [Aurao](https://github.com/badnexus/Aurao) - Open-source desktop GUI that wraps Claude Code, OpenAI Codex CLI, and Google Antigravity into a safe, non-technical workspace with 1-click file approval cards.
-```
-- **PR Title:**
-```text
-Add Aurao under Autonomous Agents / Desktop Applications
-```
+### 2. `sindresorhus/awesome-electron` (★ 27.3k) — Hold Until 30 Days & 100 Stars
+
+- **Rule (`contributing.md`):** Requires the repository to be at least **30 days old** (after `2026-11-05`) and have **100+ GitHub stars**, and forbids starting the description with `A`/`An` or mentioning `Electron`.
+- **Target File & Section:** `readme.md` → `### Apps` → `#### Productivity`
+- **Compliant Line:**
+  ```markdown
+  - [Aurao](https://github.com/badnexus/Aurao) - Desktop assistant for local files and research powered by Claude, Codex, and Antigravity with visual approval cards.
+  ```
 
 ---
 
-## 4. `sindresorhus/awesome-electron`
-- **Repository:** `https://github.com/sindresorhus/awesome-electron`
-- **Target File & Section:** `readme.md` → `### Apps` → `#### Productivity` (note: Sindre's repo enforces strict formatting: `- [App Name](url) - Description.` without trailing buzzwords)
-- **Markdown Entry to Insert:**
-```markdown
-- [Aurao](https://github.com/badnexus/Aurao) - Desktop assistant for local files and research powered by Claude, Codex, and Antigravity with visual approval cards.
-```
-- **PR Title:**
-```text
-Add Aurao to Productivity apps
-```
-
----
-
-## 5. `vitalets/awesome-ai-tools` & `mahseema/awesome-ai-tools`
-- **Repositories:**
-  - `https://github.com/vitalets/awesome-ai-tools`
-  - `https://github.com/mahseema/awesome-ai-tools`
-- **Target Section:** `Productivity` / `Desktop Assistants`
-- **Markdown Entry to Insert:**
-```markdown
-- [Aurao](https://badnexus.github.io/Aurao/) - Free, open-source desktop assistant for organizing files, summarizing PDFs, and editing local documents safely with 1-click AI approval cards ([GitHub](https://github.com/badnexus/Aurao)).
-```
-
----
-
-## 6. Software Directory Submissions (High SEO & AI-Search Authority)
+## Software Directory Submissions (High SEO & AI-Search Authority)
 
 ### A. AlternativeTo (`https://alternativeto.net`)
 - **Application Name:** `Aurao`

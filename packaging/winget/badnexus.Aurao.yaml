@@ -31,8 +31,8 @@ Installers:
   - Architecture: x64
     InstallerType: portable
     InstallerUrl: https://github.com/badnexus/Aurao/releases/download/v0.3.0/Aurao-0.3.0.exe
-    # Replace with the SHA-256 hash emitted in release/RELEASE-INFO.txt by the v0.3.0 GitHub Actions build:
-    InstallerSha256: 0000000000000000000000000000000000000000000000000000000000000000
+    # SHA-256 hash from release/RELEASE-INFO.txt of the v0.3.0 GitHub Actions build:
+    InstallerSha256: 33110D0AFC158A8D08CA53EF20BAAA02581EB3CDD247491F231F991D7E67F726
     Commands:
       - aurao
 ManifestType: singleton
