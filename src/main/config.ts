@@ -6,6 +6,7 @@ import { app } from 'electron';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { LANGUAGES, type Language } from './i18n';
+import { detectInstalledEngines, resolveFirstRunEngine } from './cliDetect';
 
 export type Persona = 'standard' | 'soft';
 export type EngineType = 'claude' | 'agy' | 'gpts';
@@ -67,7 +68,7 @@ const BUNDLED_CONFIG = path.join(POC_ROOT, 'config.json');
 const CONFIG_PATH = app.isPackaged ? path.join(app.getPath('userData'), 'config.json') : BUNDLED_CONFIG;
 
 const DEFAULTS: PocConfig = {
-  engineType: 'claude',
+  engineType: detectInstalledEngines().recommended,
   agentName: 'Aurao',
   workspaceRepo: path.join(app.getPath('home'), '.my-agent-skills'),
   workspaceRoot: app.isPackaged ? app.getPath('documents') : path.resolve(POC_ROOT, '..'),
@@ -119,9 +120,10 @@ function userOverrides(cfg: Partial<PocConfig>, bundled: Partial<PocConfig>): Pa
 
 export function loadConfig(): PocConfig {
   const user = readJson(CONFIG_PATH);
+  const bundled = app.isPackaged ? (readJson(BUNDLED_CONFIG) ?? {}) : {};
   // Older versions saved the whole config; only the user's own choices are taken from it.
   const raw = app.isPackaged
-    ? { ...(readJson(BUNDLED_CONFIG) ?? {}), ...(user ? userOverrides(user, {}) : {}) }
+    ? { ...bundled, ...(user ? userOverrides(user, {}) : {}) }
     : (user ?? {});
   // Handle migration from captainRepo to workspaceRepo for existing configs
   if ('captainRepo' in raw && !raw.workspaceRepo) {
@@ -130,6 +132,13 @@ export function loadConfig(): PocConfig {
   // Legacy persona name
   if ((raw as { persona?: string }).persona === 'captain') raw.persona = 'standard';
   if ((raw as { engineType?: string }).engineType === 'codex') raw.engineType = 'gpts';
+
+  // On first run (no user engineType saved yet), auto-detect which CLI is installed on the machine
+  const userHasExplicitEngine = Boolean(user && typeof user.engineType === 'string');
+  if (!userHasExplicitEngine) {
+    raw.engineType = resolveFirstRunEngine(raw.engineType as EngineType | undefined);
+  }
+
   const cfg: PocConfig = { ...DEFAULTS, ...raw };
   if (!ENGINE_TYPES.includes(cfg.engineType)) cfg.engineType = DEFAULTS.engineType;
   if (!PERSONAS.includes(cfg.persona)) cfg.persona = DEFAULTS.persona;

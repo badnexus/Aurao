@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aurao — Your Friendly, Safe Desktop Assistant for Files, Research & Everyday Work</title>
+  <meta name="description" content="Aurao wraps autonomous AI agents (Claude Code, OpenAI Codex CLI, and Google Antigravity) into a calm, zero-jargon Windows desktop app with 1-click file approval cards." />
+  <meta name="keywords" content="Aurao, desktop AI assistant, local AI file organizer, Claude Code GUI, OpenAI Codex desktop app, Google Antigravity GUI, human in the loop AI, safe AI agent Windows" />
+  <link rel="canonical" href="https://badnexus.github.io/Aurao/" />
+
+  <!-- OpenGraph / Social Cards -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://badnexus.github.io/Aurao/" />
+  <meta property="og:title" content="Aurao — Autonomous AI Agents Without the Command Line" />
+  <meta property="og:description" content="Organize messy folders, summarize stacks of PDFs, and draft reports right on your desktop with 1-click visual approval cards and zero technical jargon." />
+  <meta property="og:image" content="https://raw.githubusercontent.com/badnexus/Aurao/main/assets/Aurao_Assistant.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Aurao — Your Friendly Desktop AI Assistant for Files & Research" />
+  <meta name="twitter:description" content="Wraps Claude Agent SDK, OpenAI Codex CLI, and Google Antigravity into a safe, zero-jargon Windows portable app with 1-click file approvals." />
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/badnexus/Aurao/main/assets/Aurao_Assistant.png" />
+
+  <!-- GEO & SEO Structured Data: SoftwareApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Aurao",
+    "alternateName": "Termi",
+    "operatingSystem": "Windows 10, Windows 11, Linux, macOS",
+    "applicationCategory": "ProductivityApplication",
+    "softwareVersion": "0.3.0",
+    "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+    "url": "https://badnexus.github.io/Aurao/",
+    "downloadUrl": "https://github.com/badnexus/Aurao/releases/latest/download/Aurao-0.3.0.exe",
+    "codeRepository": "https://github.com/badnexus/Aurao",
+    "screenshot": "https://raw.githubusercontent.com/badnexus/Aurao/main/assets/Aurao_Assistant.png",
+    "author": {
+      "@type": "Person",
+      "name": "Florian Schaider",
+      "url": "https://github.com/badnexus"
+    },
+    "description": "Aurao is an open-source, user-friendly desktop application that wraps autonomous terminal AI agents (Anthropic Claude Agent SDK, OpenAI Codex CLI, and Google Antigravity CLI) into a calm, zero-jargon visual interface with 1-click Human-in-the-Loop file approval cards.",
+    "featureList": [
+      "Visual 1-click Human-in-the-Loop file approval cards (Approve / Decline)",
+      "Three configurable safety modes: Safe Changes (Default), Always Ask, and Autonomous Mode",
+      "Plain-language persona that eliminates developer and terminal jargon",
+      "Multi-engine architecture supporting Claude Agent SDK, OpenAI Codex CLI (codex app-server), and Google Antigravity CLI (agy)",
+      "Zero-config automatic CLI detection on first launch",
+      "Drag-and-drop local file and folder explorer with hidden system file filtering",
+      "Single-file portable Windows executable requiring no installer or administrator rights"
+    ],
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+
+  <!-- GEO & SEO Structured Data: FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Aurao?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Aurao is a free, open-source desktop application for Windows, macOS, and Linux that lets non-technical users run autonomous AI agents (Claude Code, OpenAI Codex CLI, and Google Antigravity) through a safe visual chat and workspace interface without using the command line."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can Aurao accidentally delete or overwrite my local files?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. By default, Aurao runs in 'Safe Changes' mode. It can read documents freely, but whenever the AI wants to create, edit, move, or delete a file, Aurao pauses and displays an interactive Approval Card showing the exact change. Nothing is modified until you click Approve."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need programming skills or terminal knowledge to use Aurao?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Not at all. Aurao was originally built for the creator's wife so she could use autonomous AI for document organization and research without terminal commands. Its Plain Language Persona translates technical concepts into everyday desktop terms like folders, documents, and 1-click approvals."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which AI models and agent engines does Aurao support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Aurao supports Anthropic's Claude Agent SDK (Claude 4 / Sonnet / Opus), OpenAI's Codex CLI via a low-latency JSON-RPC app-server daemon (GPT-5, o3, o4-mini), and Google's Antigravity CLI (agy / Gemini). On first launch, Aurao automatically detects which CLI is installed on your machine."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: #0b0e16;
+      --bg-card: #131826;
+      --bg-card-hover: #192033;
+      --border: rgba(148, 163, 184, 0.14);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #7c5cff;
+      --accent-glow: rgba(124, 92, 255, 0.35);
+      --amber: #f59e0b;
+      --emerald: #10b981;
+      --danger: #ef4444;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: radial-gradient(circle at 50% 0%, rgba(124, 92, 255, 0.16), transparent 55%), var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    a {
+      color: #a78bfa;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(14px);
+      background: rgba(11, 14, 22, 0.82);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 68px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 0.95rem;
+    }
+    .lang-btn {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .lang-btn:hover {
+      border-color: var(--accent);
+    }
+    .hero {
+      padding: 72px 0 56px;
+      text-align: center;
+    }
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 22px;
+    }
+    h1 {
+      font-size: clamp(2.2rem, 4.6vw, 3.6rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      max-width: 880px;
+      margin: 0 auto 20px;
+    }
+    .hero-sub {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto 32px;
+    }
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #7c5cff 0%, #5b3fd9 100%);
+      color: #fff;
+      font-weight: 600;
+      font-size: 1.05rem;
+      padding: 14px 28px;
+      border-radius: 999px;
+      box-shadow: 0 8px 28px var(--accent-glow);
+      text-decoration: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 34px rgba(124, 92, 255, 0.5);
+      text-decoration: none;
+    }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 1.02rem;
+      padding: 14px 24px;
+      border-radius: 999px;
+      text-decoration: none;
+    }
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+      text-decoration: none;
+    }
+    .sub-caption {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 42px;
+    }
+    .hero-showcase {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65);
+      background: var(--bg-card);
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .hero-showcase img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    section {
+      padding: 64px 0;
+      border-top: 1px solid var(--border);
+    }
+    h2 {
+      font-size: clamp(1.65rem, 3vw, 2.25rem);
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .section-lead {
+      text-align: center;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto 44px;
+      font-size: 1.06rem;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 22px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 26px;
+    }
+    .card h3 {
+      font-size: 1.18rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.96rem;
+    }
+    .approval-demo {
+      background: #161d2f;
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      border-radius: 14px;
+      padding: 22px;
+      max-width: 640px;
+      margin: 0 auto 36px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+    }
+    .approval-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #fbbf24;
+      font-size: 0.92rem;
+    }
+    .approval-body {
+      font-size: 0.95rem;
+      color: var(--text);
+      margin-bottom: 16px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .approval-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .btn-approve {
+      background: var(--emerald);
+      color: #052e16;
+      font-weight: 700;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .btn-decline {
+      background: rgba(239, 68, 68, 0.16);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .quote-box {
+      background: linear-gradient(135deg, rgba(124, 92, 255, 0.12), rgba(16, 185, 129, 0.08));
+      border: 1px solid rgba(124, 92, 255, 0.3);
+      border-radius: 16px;
+      padding: 28px 32px;
+      max-width: 820px;
+      margin: 36px auto 0;
+      font-style: italic;
+      color: #e2e8f0;
+    }
+    .faq-list {
+      max-width: 820px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    details.faq-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 22px;
+    }
+    details.faq-item summary {
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 1.04rem;
+    }
+    details.faq-item p {
+      margin-top: 12px;
+      color: var(--text-muted);
+      font-size: 0.96rem;
+    }
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    code {
+      background: rgba(255, 255, 255, 0.07);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 0.88em;
+    }
+    [data-lang="de"] {
+      display: none;
+    }
+    body.lang-de [data-lang="en"] {
+      display: none;
+    }
+    body.lang-de [data-lang="de"] {
+      display: revert;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container nav-bar">
+      <a href="#" class="brand">
+        <svg width="36" height="36" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="22" cy="22" r="20" stroke="#7c5cff" stroke-width="2.2" stroke-opacity="0.55" />
+          <circle cx="22" cy="22" r="14" fill="#7c5cff" fill-opacity="0.18" />
+          <path d="M22 11L31 31H26.6L24.7 26.5H19.3L17.4 31H13L22 11ZM20.7 23H23.3L22 19.6L20.7 23Z" fill="#f1f5f9"/>
+        </svg>
+        <span>Aurao</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#workflows" data-lang="en">Workflows</a>
+        <a href="#workflows" data-lang="de">Alltags-Aufgaben</a>
+        <a href="#safety" data-lang="en">Safety</a>
+        <a href="#safety" data-lang="de">Sicherheit</a>
+        <a href="#developers" data-lang="en">Developers</a>
+        <a href="#developers" data-lang="de">Entwickler</a>
+        <a href="#faq">FAQ</a>
+        <a href="https://github.com/badnexus/Aurao" target="_blank" rel="noopener">GitHub ⭐</a>
+        <button type="button" class="lang-btn" id="lang-toggle" aria-label="Switch language">DE / EN</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- HERO -->
+    <div class="hero">
+      <div class="pill-badge">
+        <span>✓ Protected &amp; Ready</span>
+        <span>·</span>
+        <span data-lang="en">No Terminal or Coding Required</span>
+        <span data-lang="de">Ohne Terminal oder Programmierkenntnisse</span>
+      </div>
+
+      <h1 data-lang="en">The Power of Autonomous AI Agents — Without the Command Line.</h1>
+      <h1 data-lang="de">Die volle Kraft autonomer KI-Agenten — ganz ohne Kommandozeile.</h1>
+
+      <p class="hero-sub" data-lang="en">
+        Aurao wraps world-class AI engines (<strong>Claude Code</strong>, <strong>OpenAI Codex CLI</strong>, and <strong>Google Antigravity</strong>) into a calm, welcoming desktop assistant. Organize folders, summarize stacks of PDFs, and draft documents with 1-click safety approvals.
+      </p>
+      <p class="hero-sub" data-lang="de">
+        Aurao verpackt führende KI-Agenten (<strong>Claude Code</strong>, <strong>OpenAI Codex CLI</strong> und <strong>Google Antigravity</strong>) in einen ruhigen, verständlichen Desktop-Assistenten. Ordner sortieren, PDF-Stapel zusammenfassen und Dokumente erstellen — sicher per 1-Klick-Freigabe.
+      </p>
+
+      <div class="cta-row">
+        <a class="btn-primary" href="https://github.com/badnexus/Aurao/releases/latest/download/Aurao-0.3.0.exe">
+          <span data-lang="en">⬇️ Download Aurao for Windows (.exe)</span>
+          <span data-lang="de">⬇️ Aurao für Windows herunterladen (.exe)</span>
+        </a>
+        <a class="btn-secondary" href="https://github.com/badnexus/Aurao" target="_blank" rel="noopener">
+          <span data-lang="en">⭐ Star on GitHub (v0.3.0)</span>
+          <span data-lang="de">⭐ Auf GitHub ansehen (v0.3.0)</span>
+        </a>
+      </div>
+
+      <p class="sub-caption" data-lang="en">
+        Portable single-file Windows 10/11 executable · No installer or admin rights needed · Or run <code>winget install badnexus.Aurao</code>
+      </p>
+      <p class="sub-caption" data-lang="de">
+        Portable Einzeldatei für Windows 10/11 · Keine Installation oder Admin-Rechte nötig · Oder via <code>winget install badnexus.Aurao</code>
+      </p>
+
+      <div class="hero-showcase">
+        <img
+          src="https://raw.githubusercontent.com/badnexus/Aurao/main/assets/Aurao_Demo.gif"
+          alt="Aurao Desktop Assistant organizing files with 1-click Human-in-the-Loop approval cards"
+        />
+      </div>
+
+      <div class="quote-box">
+        <span data-lang="en">
+          “I originally built Aurao for my wife so she could harness autonomous agentic AI for research, document management, and everyday work — without touching a terminal or learning code. It worked so well that we open-sourced it for everyone.”
+        </span>
+        <span data-lang="de">
+          „Ich habe Aurao ursprünglich für meine Frau gebaut, damit sie autonome KI-Agenten für Recherche, Dokumentenorganisation und Alltagsaufgaben nutzen kann — ohne ein Terminal anzufassen. Es hat so gut funktioniert, dass wir es als Open Source veröffentlicht haben.“
+        </span>
+      </div>
+    </div>
+
+    <!-- WORKFLOWS -->
+    <section id="workflows">
+      <h2 data-lang="en">What You Can Do in 5 Minutes</h2>
+      <h2 data-lang="de">Was Sie in 5 Minuten erledigen können</h2>
+      <p class="section-lead" data-lang="en">
+        Just drag any file or folder from your computer into the Aurao chat window and ask in plain English or German.
+      </p>
+      <p class="section-lead" data-lang="de">
+        Ziehen Sie einfach eine Datei oder einen Ordner per Drag &amp; Drop in das Chatfenster und fragen Sie in normaler Alltagssprache.
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>📁 <span data-lang="en">Clean Up Messy Folders</span><span data-lang="de">Unordentliche Ordner aufräumen</span></h3>
+          <p data-lang="en">Drag your cluttered <em>Downloads</em> or <em>Desktop</em> folder into Aurao and ask: <em>"Sort these invoices and documents into folders by year and topic."</em></p>
+          <p data-lang="de">Ziehen Sie Ihren vollen <em>Downloads</em>- oder <em>Desktop</em>-Ordner in Aurao: <em>„Sortiere diese Rechnungen und Dokumente nach Jahr und Thema.“</em></p>
+        </div>
+        <div class="card">
+          <h3>📑 <span data-lang="en">Summarize Stacks of PDFs</span><span data-lang="de">PDF-Stapel zusammenfassen</span></h3>
+          <p data-lang="en">Drop 20 research papers, contracts, or meeting notes into the chat: <em>"Compare the key findings and save a 1-page executive briefing to my Documents folder."</em></p>
+          <p data-lang="de">Ziehen Sie 20 Berichte oder Notizen in den Chat: <em>„Vergleiche die wichtigsten Ergebnisse und speichere eine 1-seitige Zusammenfassung unter Dokumente.“</em></p>
+        </div>
+        <div class="card">
+          <h3>🔍 <span data-lang="en">In-Depth Web Research</span><span data-lang="de">Gründliche Web-Recherche</span></h3>
+          <p data-lang="en">Give Aurao a question. It researches sources, verifies facts, and writes a structured report directly to your workspace.</p>
+          <p data-lang="de">Stellen Sie eine Recherche-Aufgabe. Aurao prüft Quellen und speichert ein fertiges Dossier direkt in Ihrem Arbeitsbereich.</p>
+        </div>
+        <div class="card">
+          <h3>✍️ <span data-lang="en">Edit Documents Without Copy-Pasting</span><span data-lang="de">Dokumente direkt bearbeiten</span></h3>
+          <p data-lang="en">Stop copying and pasting text between browser tabs and Word/Markdown files. Aurao creates and updates files directly on your PC — after your approval.</p>
+          <p data-lang="de">Kein mühsames Copy &amp; Paste mehr zwischen Browser und Dokumenten. Aurao erstellt und aktualisiert Dateien direkt auf Ihrem PC — nach Ihrer Freigabe.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SAFETY -->
+    <section id="safety">
+      <h2 data-lang="en">Complete Control: 1-Click Approval Cards</h2>
+      <h2 data-lang="de">Volle Kontrolle: Visuelle 1-Klick-Freigabekarten</h2>
+      <p class="section-lead" data-lang="en">
+        Letting an AI work with your files should never feel risky. Aurao pauses before any file change and shows you a clear visual card.
+      </p>
+      <p class="section-lead" data-lang="de">
+        Eine KI an den eigenen Dateien arbeiten zu lassen, darf sich niemals unsicher anfühlen. Vor jeder Änderung zeigt Aurao eine übersichtliche Freigabekarte.
+      </p>
+
+      <div class="approval-demo" aria-label="Interactive Approval Card Preview">
+        <div class="approval-header">
+          <span>🛡️ <span data-lang="en">Approval Requested · Safe Changes Mode</span><span data-lang="de">Freigabe erforderlich · Sicherheitsmodus</span></span>
+          <span>Write File</span>
+        </div>
+        <div class="approval-body">
+          Documents/2026-Summary-Briefing.md<br/>
+          + Created 1-page synthesis from 14 PDF reports in Downloads/Research
+        </div>
+        <div class="approval-actions">
+          <span class="btn-approve" data-lang="en">✓ Approve Change</span>
+          <span class="btn-approve" data-lang="de">✓ Änderung freigeben</span>
+          <span class="btn-decline" data-lang="en">✕ Decline</span>
+          <span class="btn-decline" data-lang="de">✕ Ablehnen</span>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>🟢 <span data-lang="en">Safe Changes (Default)</span><span data-lang="de">Nur Änderungen (Standard)</span></h3>
+          <p data-lang="en">Aurao reads files and searches freely, but always asks for your 1-click approval before creating, modifying, or deleting any file.</p>
+          <p data-lang="de">Aurao liest Dateien selbstständig, fragt aber vor jedem Speichern, Ändern oder Löschen per Freigabekarte nach.</p>
+        </div>
+        <div class="card">
+          <h3>🟡 <span data-lang="en">Always Ask</span><span data-lang="de">Immer fragen</span></h3>
+          <p data-lang="en">Maximum oversight: Aurao asks for confirmation before every single read, search, or write step.</p>
+          <p data-lang="de">Maximale Aufsicht: Aurao bittet vor jedem einzelnen Lese-, Such- oder Schreibschritt um Ihre Bestätigung.</p>
+        </div>
+        <div class="card">
+          <h3>⚡ <span data-lang="en">Autonomous Mode</span><span data-lang="de">Autopilot-Modus</span></h3>
+          <p data-lang="en">Hands-free execution for trusted batch tasks and multi-step workflows when you don't want any interruptions.</p>
+          <p data-lang="de">Unterbrechungsfreie Ausführung für umfangreiche Routineaufgaben, wenn Sie keine Rückfragen wünschen.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEVELOPERS -->
+    <section id="developers">
+      <h2 data-lang="en">Under the Hood: Why Developers Star &amp; Share Aurao</h2>
+      <h2 data-lang="de">Unter der Haube: Warum Entwickler Aurao empfehlen</h2>
+      <p class="section-lead" data-lang="en">
+        Built with Electron &amp; TypeScript around a clean multi-engine abstraction (`IEngine.ts`) and context-isolated IPC.
+      </p>
+      <p class="section-lead" data-lang="de">
+        Entwickelt mit Electron &amp; TypeScript auf Basis einer sauberen Multi-Engine-Architektur (`IEngine.ts`) und isoliertem IPC.
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>🧠 3 Powerhouse Engines</h3>
+          <p>First-class support for Anthropic's <code>@anthropic-ai/claude-agent-sdk</code>, OpenAI's <code>codex app-server</code> (persistent JSON-RPC 2.0 daemon over <code>stdio</code>), and Google's Antigravity CLI (<code>agy</code>).</p>
+        </div>
+        <div class="card">
+          <h3>🔍 Zero-Config CLI Auto-Detect</h3>
+          <p><code>src/main/cliDetect.ts</code> inspects <code>PATH</code> and standard global npm/user binary directories on first run without spawning visible console windows on Windows.</p>
+        </div>
+        <div class="card">
+          <h3>🔓 100% Open Source (GPLv3)</h3>
+          <p>Auditable code, 60fps <code>StreamAccumulator</code> UI rendering, ANSI <code>LogSanitizer</code>, and native session history resume across Claude, Codex, and Antigravity.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq">
+      <h2>Frequently Asked Questions (FAQ)</h2>
+      <p class="section-lead" data-lang="en">Quick answers for everyday users and AI search engines.</p>
+      <p class="section-lead" data-lang="de">Kurze Antworten auf die wichtigsten Fragen.</p>
+
+      <div class="faq-list">
+        <details class="faq-item" open>
+          <summary>What is Aurao?</summary>
+          <p>Aurao is a free, open-source desktop application for Windows, macOS, and Linux that lets non-technical users run autonomous AI agents (Claude Code, OpenAI Codex CLI, and Google Antigravity) through a safe visual chat and file workspace interface without touching the command line.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Can Aurao accidentally delete or overwrite my local files?</summary>
+          <p>No. By default, Aurao operates in <strong>Safe Changes</strong> mode. Whenever the assistant wants to create, edit, or delete a file, it displays an interactive Approval Card explaining the exact change. Nothing happens unless you click <strong>Approve</strong>.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Do I need to know how to code or use a terminal?</summary>
+          <p>Not at all. Aurao includes a Plain-Language Persona that eliminates developer jargon (no "repositories", "commits", "CWD", or "stdout") and communicates in familiar desktop concepts like folders, documents, and 1-click approvals.</p>
+        </details>
+        <details class="faq-item">
+          <summary>How does Aurao connect to AI models?</summary>
+          <p>On first launch, Aurao automatically detects whether you have Claude Code (<code>claude</code>), OpenAI Codex CLI (<code>codex</code>), or Google Antigravity (<code>agy</code>) installed, and includes a built-in Settings &amp; Health Check modal (<code>⚙️</code>) to configure your preferred model in seconds.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>
+        <strong>Aurao v0.3.0</strong> · Released under the <a href="https://github.com/badnexus/Aurao/blob/main/LICENSE">GNU GPLv3 License</a> ·
+        <a href="https://github.com/badnexus/Aurao">GitHub Repository</a> ·
+        <a href="https://github.com/badnexus/Aurao/releases">Releases</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var btn = document.getElementById('lang-toggle');
+      if (navigator.language && navigator.language.toLowerCase().startsWith('de')) {
+        document.body.classList.add('lang-de');
+      }
+      btn.addEventListener('click', function () {
+        document.body.classList.toggle('lang-de');
+      });
+    })();
+  </script>
+</body>
+</html>

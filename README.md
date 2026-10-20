@@ -1,8 +1,11 @@
 # Aurao — Your Friendly Desktop Assistant for Files, Research & Everyday Work
 
+[![Release](https://img.shields.io/github/v/release/badnexus/Aurao?label=Release&color=brightgreen)](https://github.com/badnexus/Aurao/releases/latest)
+[![GitHub Stars](https://img.shields.io/github/stars/badnexus/Aurao?style=social)](https://github.com/badnexus/Aurao/stargazers)
+[![Website](https://img.shields.io/badge/Website-badnexus.github.io%2FAurao-7c5cff)](https://badnexus.github.io/Aurao/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20Portable%20%7C%20Linux%20%7C%20macOS-47848F)]()
-[![No Terminal Required](https://img.shields.io/badge/Skill%20Level-No%20Coding%20Required-brightgreen)]()
+[![Platform](https://img.shields.io/badge/Platform-Windows%20Portable%20%7C%20Linux%20%7C%20macOS-47848F)](https://github.com/badnexus/Aurao/releases)
+[![No Terminal Required](https://img.shields.io/badge/Skill%20Level-No%20Coding%20Required-brightgreen)](#)
 
 > **The power of autonomous AI agents — without the command line.**  
 > Aurao helps you organize messy folders, summarize piles of PDFs, conduct web research, and draft reports right on your desktop, with total safety and zero technical jargon.
@@ -12,11 +15,15 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/badnexus/Aurao/releases">
-    <img src="https://img.shields.io/badge/⬇️%20Download%20Aurao%20for%20Windows-Portable%20(.exe)-success?style=for-the-badge&logo=windows" alt="Download Aurao Portable" />
+  <a href="https://github.com/badnexus/Aurao/releases/latest/download/Aurao-0.3.0.exe">
+    <img src="https://img.shields.io/badge/⬇️%20Download%20Aurao%20v0.3.0%20for%20Windows-Portable%20(.exe)-success?style=for-the-badge&logo=windows" alt="Download Aurao Portable" />
+  </a>
+  &nbsp;
+  <a href="https://badnexus.github.io/Aurao/">
+    <img src="https://img.shields.io/badge/🌐%20Visit%20Product%20Website-Live%20Overview-7c5cff?style=for-the-badge" alt="Visit Aurao Website" />
   </a>
 </p>
-<p align="center"><em>No installer, no Node.js, no terminal commands. Just download and run.</em></p>
+<p align="center"><em>No installer, no Node.js, no terminal commands. Just download <code>Aurao-0.3.0.exe</code> and run — or view <a href="https://github.com/badnexus/Aurao/releases">all releases</a>.</em></p>
 
 ---
 
@@ -68,12 +75,12 @@ Letting an AI touch your files can feel daunting. That is why Aurao was engineer
 
 ## 🚀 Quick Start Guide (Windows)
 
-1. **Download:** Grab the latest `Aurao-vX.Y.Z.exe` from the [Releases page](https://github.com/badnexus/Aurao/releases).
+1. **Download:** Grab [`Aurao-0.3.0.exe`](https://github.com/badnexus/Aurao/releases/latest/download/Aurao-0.3.0.exe) directly (or from the [Releases page](https://github.com/badnexus/Aurao/releases)).
 2. **Launch:** Double-click the file. (No installation, Python, or administrator rights required!).
-3. **Connect Your Assistant:** Click the **Settings (`⚙️`)** icon in the top right to select your preferred AI model or enter your API key.
+3. **Auto-Detect Ready:** On first launch, Aurao automatically detects whether you have **Claude Code (`claude`)**, **OpenAI Codex (`codex`)**, or **Google Antigravity (`agy`)** installed — or click the **Settings (`⚙️`)** icon in the top right to choose your engine and model.
 4. **Get to Work:** Drag any document or folder into the window and start chatting!
 
-*(Supports Windows 10 & 11. macOS and Linux builds are available from source.)*
+*(Supports Windows 10 & 11. Power users can also install via Winget once indexed: `winget install badnexus.Aurao`. macOS and Linux builds run directly from source.)*
 
 ---
 
@@ -97,6 +104,12 @@ Yes! Aurao is licensed under the GNU General Public License v3.0 (GPLv3). You ar
 ---
 
 ## 👨‍💻 For Developers & Power Users
+
+> **⭐ Why Developers Star & Share Aurao:**
+> - **Clean Multi-Engine Abstraction (`IEngine.ts`):** Unified TypeScript interface wrapping `@anthropic-ai/claude-agent-sdk`, OpenAI's **`codex app-server`** (via persistent low-latency JSON-RPC 2.0 over `stdio` with direct Windows native Rust binary unwrapping), and Google's **Antigravity CLI (`agy`)**.
+> - **Zero-Config CLI Auto-Detection (`cliDetect.ts`):** Pure filesystem binary detection (`PATH` + standard npm/user bin paths) that automatically selects the installed agent CLI on first launch without spawning visible console windows on Windows.
+> - **Human-in-the-Loop Pre-Tool Hooks:** Intercepts mutating file/command tool calls across all 3 engines and routes them through context-isolated Electron IPC (`window.aurao`) to render interactive 1-click Approval Cards (`ask` | `safe` | `bypass`).
+> - **Shareable with Non-Tech Family & Teammates:** The easiest way to hand Claude Code, Codex CLI, or Antigravity to a spouse, researcher, or business colleague as a single portable `.exe`.
 
 <details>
 <summary><strong>Click here to view Architecture, Source Build & Contributing instructions</strong></summary>

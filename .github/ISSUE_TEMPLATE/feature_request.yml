@@ -1,0 +1,36 @@
+name: Feature Request
+description: Suggest an everyday workflow improvement, new AI engine, or UI enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to make **Aurao** safer, friendlier, or more capable? Let us know!
+  - type: dropdown
+    id: category
+    attributes:
+      label: Area
+      options:
+        - Everyday User Experience & Visual UI
+        - Safety Modes & Approval Cards
+        - New AI Agent Engine / Model Provider
+        - File Explorer & Workspace Navigation
+        - Localization / Translations
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What everyday task or problem would this solve?
+      placeholder: "e.g. When I drop 10 PDFs into the chat, I would love to..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How should this work from the user's perspective?
+    validations:
+      required: true

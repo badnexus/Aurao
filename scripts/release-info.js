@@ -34,4 +34,16 @@ for (const name of exes) {
 }
 const text = lines.join('\n');
 fs.writeFileSync(path.join(dir, 'RELEASE-INFO.txt'), text, 'utf8');
+
+const wingetTemplatePath = path.join(root, 'packaging', 'winget', 'badnexus.Aurao.yaml');
+if (fs.existsSync(wingetTemplatePath) && exes.length > 0) {
+  const primaryExe = path.join(dir, exes[0]);
+  const primaryHash = crypto.createHash('sha256').update(fs.readFileSync(primaryExe)).digest('hex').toUpperCase();
+  const wingetYaml = fs
+    .readFileSync(wingetTemplatePath, 'utf8')
+    .replace(/PackageVersion:\s*.*/, `PackageVersion: ${pkg.version}`)
+    .replace(/InstallerSha256:\s*[0-9A-Fa-f]{64}/, `InstallerSha256: ${primaryHash}`);
+  fs.writeFileSync(path.join(dir, 'badnexus.Aurao.yaml'), wingetYaml, 'utf8');
+}
+
 console.log(text);

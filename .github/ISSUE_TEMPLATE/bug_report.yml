@@ -1,0 +1,55 @@
+name: Bug Report
+description: Report a problem or unexpected behavior in Aurao
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue in **Aurao**!
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows 11
+        - Windows 10
+        - Linux
+        - macOS
+    validations:
+      required: true
+  - type: dropdown
+    id: engine
+    attributes:
+      label: AI Engine (AI Brain)
+      options:
+        - Claude (Claude Agent SDK / Claude Code)
+        - OpenAI Codex CLI (gpts / codex)
+        - Google Antigravity CLI (agy)
+        - Not sure / Happens before selecting an engine
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Aurao Version
+      placeholder: "e.g. v0.3.0 (Portable .exe or built from source)"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of what went wrong and what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Open Aurao
+        2. Drag a folder into the chat
+        3. Ask Aurao to...
+    validations:
+      required: false

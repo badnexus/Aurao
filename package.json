@@ -1,8 +1,16 @@
 {
   "name": "aurao",
   "productName": "Aurao",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Your friendly, safe desktop assistant for files, research, and everyday workflows.",
+  "homepage": "https://badnexus.github.io/Aurao/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/badnexus/Aurao.git"
+  },
+  "bugs": {
+    "url": "https://github.com/badnexus/Aurao/issues"
+  },
   "main": "dist/main/main.js",
   "scripts": {
     "prebuild": "node -e \"require('fs').mkdirSync('src/renderer/vendor',{recursive:true});require('fs').copyFileSync('node_modules/marked/lib/marked.umd.js','src/renderer/vendor/marked.umd.js')\"",
@@ -13,7 +21,16 @@
     "dist": "npm run build && electron-builder --win portable",
     "postdist": "node scripts/release-info.js"
   },
-  "keywords": [],
+  "keywords": [
+    "ai-agent",
+    "desktop-assistant",
+    "claude-code",
+    "openai-codex",
+    "google-antigravity",
+    "human-in-the-loop",
+    "electron",
+    "local-ai"
+  ],
   "author": "",
   "license": "GPL-3.0-only",
   "type": "commonjs",

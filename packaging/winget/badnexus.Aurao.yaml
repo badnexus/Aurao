@@ -1,0 +1,39 @@
+# Created for Windows Package Manager (winget-pkgs)
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.singleton.1.6.0.schema.json
+
+PackageIdentifier: badnexus.Aurao
+PackageVersion: 0.3.0
+PackageLocale: en-US
+Publisher: Florian Schaider (badnexus)
+PublisherUrl: https://github.com/badnexus
+PublisherSupportUrl: https://github.com/badnexus/Aurao/issues
+PackageName: Aurao
+PackageUrl: https://badnexus.github.io/Aurao/
+License: GPL-3.0-only
+LicenseUrl: https://github.com/badnexus/Aurao/blob/main/LICENSE
+ShortDescription: Friendly, safe desktop GUI for autonomous AI agents (Claude Code, OpenAI Codex CLI, Google Antigravity) with 1-click file approval cards.
+Description: >-
+  Aurao wraps autonomous terminal AI engines (Anthropic Claude Agent SDK, OpenAI Codex CLI, and Google Antigravity CLI)
+  into a calm, zero-jargon desktop interface for Windows. Organize folders, summarize stacks of PDFs, conduct research,
+  and edit local documents safely with visual Human-in-the-Loop approval cards.
+Moniker: aurao
+Tags:
+  - ai
+  - ai-agent
+  - assistant
+  - claude
+  - codex
+  - desktop
+  - productivity
+  - human-in-the-loop
+ReleaseNotesUrl: https://github.com/badnexus/Aurao/releases/tag/v0.3.0
+Installers:
+  - Architecture: x64
+    InstallerType: portable
+    InstallerUrl: https://github.com/badnexus/Aurao/releases/download/v0.3.0/Aurao-0.3.0.exe
+    # Replace with the SHA-256 hash emitted in release/RELEASE-INFO.txt by the v0.3.0 GitHub Actions build:
+    InstallerSha256: 0000000000000000000000000000000000000000000000000000000000000000
+    Commands:
+      - aurao
+ManifestType: singleton
+ManifestVersion: 1.6.0
