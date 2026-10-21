@@ -304,7 +304,7 @@ export class GptsEngine extends EventEmitter implements IEngine {
 
       // Perform JSON-RPC 2.0 `initialize` -> `initialized` handshake
       this.sendRpcRequest('initialize', {
-        clientInfo: { name: 'aurao', title: 'Aurao', version: '0.2.0' },
+        clientInfo: { name: 'aurao', title: 'Aurao', version: '0.3.1' },
         capabilities: { experimentalAPI: true },
       }, 4000)
         .then(async () => {

@@ -15,15 +15,15 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/badnexus/Aurao/releases/latest/download/Aurao-0.3.0.exe">
-    <img src="https://img.shields.io/badge/⬇️%20Download%20Aurao%20v0.3.0%20for%20Windows-Portable%20(.exe)-success?style=for-the-badge&logo=windows" alt="Download Aurao Portable" />
+  <a href="https://github.com/badnexus/Aurao/releases/latest/download/Aurao-0.3.1.exe">
+    <img src="https://img.shields.io/badge/⬇️%20Download%20Aurao%20v0.3.1%20for%20Windows-Portable%20(.exe)-success?style=for-the-badge&logo=windows" alt="Download Aurao Portable" />
   </a>
   &nbsp;
   <a href="https://badnexus.github.io/Aurao/">
     <img src="https://img.shields.io/badge/🌐%20Visit%20Product%20Website-Live%20Overview-7c5cff?style=for-the-badge" alt="Visit Aurao Website" />
   </a>
 </p>
-<p align="center"><em>No installer, no Node.js, no terminal commands. Just download <code>Aurao-0.3.0.exe</code> and run — or view <a href="https://github.com/badnexus/Aurao/releases">all releases</a>.</em></p>
+<p align="center"><em>No installer, no Node.js, no terminal commands. Just download <code>Aurao-0.3.1.exe</code> and run — or view <a href="https://github.com/badnexus/Aurao/releases">all releases</a>.</em></p>
 
 ---
 
@@ -75,7 +75,7 @@ Letting an AI touch your files can feel daunting. That is why Aurao was engineer
 
 ## 🚀 Quick Start Guide (Windows)
 
-1. **Download:** Grab [`Aurao-0.3.0.exe`](https://github.com/badnexus/Aurao/releases/latest/download/Aurao-0.3.0.exe) directly (or from the [Releases page](https://github.com/badnexus/Aurao/releases)).
+1. **Download:** Grab [`Aurao-0.3.1.exe`](https://github.com/badnexus/Aurao/releases/latest/download/Aurao-0.3.1.exe) directly (or from the [Releases page](https://github.com/badnexus/Aurao/releases)).
 2. **Launch:** Double-click the file. (No installation, Python, or administrator rights required!).
 3. **Auto-Detect Ready:** On first launch, Aurao automatically detects whether you have **Claude Code (`claude`)**, **OpenAI Codex (`codex`)**, or **Google Antigravity (`agy`)** installed — or click the **Settings (`⚙️`)** icon in the top right to choose your engine and model.
 4. **Get to Work:** Drag any document or folder into the window and start chatting!
