@@ -14,6 +14,8 @@ import { listDir, statPath } from './files';
 import { systemPromptAppend } from './persona';
 import { detectLanguage, getLanguage, setLanguage, t, type Language } from './i18n';
 import { listSessions, getSessionHistory } from './sessions';
+import { applyProfileEnv } from './engineProfiles';
+import { expandHome } from './paths';
 
 let win: BrowserWindow | null = null;
 let engine: IEngine | null = null;
@@ -238,18 +240,23 @@ function checkAgyHealth(): { ok: boolean; path?: string; message: string; tip?: 
   };
 }
 
+function activeEnv(): NodeJS.ProcessEnv {
+  return applyProfileEnv(process.env, cfg.engineProfile ? cfg.engineProfiles?.[cfg.engineProfile] : undefined);
+}
+
 function checkClaudeHealth(): { ok: boolean; provider: string; message: string; tip?: string } {
+  const env = activeEnv();
   // 1. Microsoft Foundry
   const isFoundry =
-    process.env.CLAUDE_CODE_USE_FOUNDRY === '1' ||
-    Boolean(process.env.ANTHROPIC_FOUNDRY_RESOURCE) ||
-    Boolean(process.env.ANTHROPIC_FOUNDRY_BASE_URL) ||
-    Boolean(process.env.ANTHROPIC_BASE_URL?.toLowerCase().includes('azure')) ||
-    Boolean(process.env.AZURE_AI_API_KEY) ||
-    Boolean(process.env.FOUNDRY_API_KEY);
+    env.CLAUDE_CODE_USE_FOUNDRY === '1' ||
+    Boolean(env.ANTHROPIC_FOUNDRY_RESOURCE) ||
+    Boolean(env.ANTHROPIC_FOUNDRY_BASE_URL) ||
+    Boolean(env.ANTHROPIC_BASE_URL?.toLowerCase().includes('azure')) ||
+    Boolean(env.AZURE_AI_API_KEY) ||
+    Boolean(env.FOUNDRY_API_KEY);
 
   if (isFoundry) {
-    const res = process.env.ANTHROPIC_FOUNDRY_RESOURCE || 'Microsoft Azure AI Foundry';
+    const res = env.ANTHROPIC_FOUNDRY_RESOURCE || 'Microsoft Azure AI Foundry';
     return {
       ok: true,
       provider: 'foundry',
@@ -259,12 +266,12 @@ function checkClaudeHealth(): { ok: boolean; provider: string; message: string; 
 
   // 2. AWS Bedrock
   const isBedrock =
-    process.env.CLAUDE_CODE_USE_BEDROCK === '1' ||
-    Boolean(process.env.AWS_PROFILE) ||
-    Boolean(process.env.AWS_ACCESS_KEY_ID);
+    env.CLAUDE_CODE_USE_BEDROCK === '1' ||
+    Boolean(env.AWS_PROFILE) ||
+    Boolean(env.AWS_ACCESS_KEY_ID);
 
   if (isBedrock) {
-    const reg = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'Standard-Region';
+    const reg = env.AWS_REGION || env.AWS_DEFAULT_REGION || 'Standard-Region';
     return {
       ok: true,
       provider: 'bedrock',
@@ -274,12 +281,12 @@ function checkClaudeHealth(): { ok: boolean; provider: string; message: string; 
 
   // 3. Google Cloud Vertex AI
   const isVertex =
-    process.env.CLAUDE_CODE_USE_VERTEX === '1' ||
-    Boolean(process.env.ANTHROPIC_VERTEX_PROJECT_ID) ||
-    Boolean(process.env.CLOUD_ML_REGION);
+    env.CLAUDE_CODE_USE_VERTEX === '1' ||
+    Boolean(env.ANTHROPIC_VERTEX_PROJECT_ID) ||
+    Boolean(env.CLOUD_ML_REGION);
 
   if (isVertex) {
-    const prj = process.env.ANTHROPIC_VERTEX_PROJECT_ID || 'GCP Vertex';
+    const prj = env.ANTHROPIC_VERTEX_PROJECT_ID || 'GCP Vertex';
     return {
       ok: true,
       provider: 'vertex',
@@ -288,7 +295,7 @@ function checkClaudeHealth(): { ok: boolean; provider: string; message: string; 
   }
 
   // 4. Direct Anthropic API Key or Auth Token
-  if (Boolean(process.env.ANTHROPIC_API_KEY) || Boolean(process.env.ANTHROPIC_AUTH_TOKEN)) {
+  if (Boolean(env.ANTHROPIC_API_KEY) || Boolean(env.ANTHROPIC_AUTH_TOKEN)) {
     return {
       ok: true,
       provider: 'anthropic',
@@ -332,7 +339,8 @@ function checkCodexHealth(): { ok: boolean; path?: string; provider?: string; me
     };
   }
 
-  const hasApiKey = Boolean(process.env.OPENAI_API_KEY || process.env.AZURE_OPENAI_API_KEY);
+  const env = activeEnv();
+  const hasApiKey = Boolean(env.OPENAI_API_KEY || env.AZURE_OPENAI_API_KEY);
   const authJsonPath = path.join(app.getPath('home'), '.codex', 'auth.json');
   const hasAuthJson = fs.existsSync(authJsonPath);
 
@@ -387,6 +395,10 @@ ipcMain.handle('config:saveAll', async (_e, newValues: Partial<PocConfig>) => {
 
   // The profiles themselves ship with the app; the renderer may only choose one.
   const { engineProfiles: _ignored, ...values } = newValues;
+  const home = app.getPath('home');
+  if (typeof values.workspaceRepo === 'string') values.workspaceRepo = expandHome(values.workspaceRepo, home);
+  if (typeof values.workspaceRoot === 'string') values.workspaceRoot = expandHome(values.workspaceRoot, home);
+  if (typeof values.claudeExecutable === 'string') values.claudeExecutable = expandHome(values.claudeExecutable, home);
   cfg = { ...cfg, ...values };
   if (cfg.engineProfile && !cfg.engineProfiles?.[cfg.engineProfile]) delete cfg.engineProfile;
   persist();

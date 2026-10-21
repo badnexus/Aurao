@@ -10,6 +10,7 @@ import { t } from './i18n';
 import { findOnPath } from './AgyEngine';
 import { StreamAccumulator } from './StreamAccumulator';
 import { stripAnsi } from './LogSanitizer';
+import { applyProfileEnv } from './engineProfiles';
 
 export interface ResolvedCodexBinary {
   exe: string;
@@ -179,6 +180,13 @@ export class GptsEngine extends EventEmitter implements IEngine {
       line: t('engine.starting', { agent: this.opts.agentName || 'Aurao', cwd: this.opts.cwd }),
       level: 'info',
     });
+    if (this.opts.envProfileName) {
+      this.emitEvent({
+        kind: 'terminal',
+        line: t('engine.profile', { name: this.opts.envProfileName, vars: Object.keys(this.opts.env ?? {}).join(', ') || '–' }),
+        level: 'info',
+      });
+    }
 
     if (!fs.existsSync(this.opts.cwd)) {
       this.emitEvent({ kind: 'error', text: t('codex.badCwd', { cwd: this.opts.cwd }) });
@@ -235,9 +243,10 @@ export class GptsEngine extends EventEmitter implements IEngine {
       };
 
       try {
+        const env = applyProfileEnv(process.env, this.opts.env);
         this.proc = bin.isCmdShim
-          ? spawn(`"${bin.exe}" app-server`, { cwd: this.opts.cwd, shell: true, windowsHide: true })
-          : spawn(bin.exe, ['app-server'], { cwd: this.opts.cwd, windowsHide: true });
+          ? spawn(`"${bin.exe}" app-server`, { cwd: this.opts.cwd, env, shell: true, windowsHide: true })
+          : spawn(bin.exe, ['app-server'], { cwd: this.opts.cwd, env, windowsHide: true });
       } catch (err) {
         this.exited = true;
         this.emitEvent({ kind: 'error', text: t('codex.startFailed', { e: String(err) }) });
@@ -793,9 +802,10 @@ export class GptsEngine extends EventEmitter implements IEngine {
       !this.threadId && this.opts.systemPromptAppend ? `${this.opts.systemPromptAppend}\n\n${text}` : text;
 
     try {
+      const env = applyProfileEnv(process.env, this.opts.env);
       this.proc = bin.isCmdShim
-        ? spawn(`"${bin.exe}" ${args.join(' ')}`, { cwd: this.opts.cwd, shell: true, windowsHide: true })
-        : spawn(bin.exe, args, { cwd: this.opts.cwd, windowsHide: true });
+        ? spawn(`"${bin.exe}" ${args.join(' ')}`, { cwd: this.opts.cwd, env, shell: true, windowsHide: true })
+        : spawn(bin.exe, args, { cwd: this.opts.cwd, env, windowsHide: true });
     } catch (err) {
       this.emitEvent({ kind: 'error', text: t('codex.startFailed', { e: String(err) }) });
       this.finishTurn(true);

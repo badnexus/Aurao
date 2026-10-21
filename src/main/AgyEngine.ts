@@ -11,6 +11,7 @@ import type { ApprovalMode } from './config';
 import { t } from './i18n';
 import { StreamAccumulator } from './StreamAccumulator';
 import { stripAnsi } from './LogSanitizer';
+import { applyProfileEnv } from './engineProfiles';
 
 export class AgyEngine extends EventEmitter implements IEngine {
   private stopped = false;
@@ -57,6 +58,13 @@ export class AgyEngine extends EventEmitter implements IEngine {
 
   async start(): Promise<void> {
     this.emitEvent({ kind: 'terminal', line: t('engine.starting', { agent: this.opts.agentName || 'Agy', cwd: this.opts.cwd }), level: 'info' });
+    if (this.opts.envProfileName) {
+      this.emitEvent({
+        kind: 'terminal',
+        line: t('engine.profile', { name: this.opts.envProfileName, vars: Object.keys(this.opts.env ?? {}).join(', ') || '–' }),
+        level: 'info',
+      });
+    }
 
     const args = ['--input-format', 'stream-json', '--output-format', 'stream-json'];
     // In headless stream-json mode, agy auto-denies interactive tools unless --dangerously-skip-permissions is passed.
@@ -91,9 +99,10 @@ export class AgyEngine extends EventEmitter implements IEngine {
     }
     // A .cmd/.bat wrapper (npm installs agy that way on Windows) can only run through cmd.exe;
     // all arguments are fixed flags or SAFE_ARG-checked, so the joined command line is safe.
+    const env = applyProfileEnv(process.env, this.opts.env);
     this.proc = /\.(cmd|bat)$/i.test(exe)
-      ? spawn(`"${exe}" ${args.join(' ')}`, { cwd: this.opts.cwd, shell: true, windowsHide: true })
-      : spawn(exe, args, { cwd: this.opts.cwd, windowsHide: true });
+      ? spawn(`"${exe}" ${args.join(' ')}`, { cwd: this.opts.cwd, env, shell: true, windowsHide: true })
+      : spawn(exe, args, { cwd: this.opts.cwd, env, windowsHide: true });
 
     this.proc.on('error', (err: NodeJS.ErrnoException) => {
       this.exited = true;
