@@ -148,6 +148,12 @@ Aurao is built with Electron and TypeScript using a clean separation of concerns
 - `src/preload/preload.ts` — Secure context-isolated IPC bridge (`window.aurao` with `window.termi` alias).
 - `src/renderer/` — Reactive UI, glowing aura components, Markdown parsing, and approval cards.
 
+### Home-relative paths in config.json
+
+`workspaceRepo`, `workspaceRoot` and `claudeExecutable` may start with `~/`, meaning the user's home
+folder — so one shipped `config.json` fits every user, for example `"workspaceRepo": "~/MyAssistant"`
+together with `workspaceGitUrl`.
+
 ### License & Commercial Inquiries
 Aurao is distributed under the **GPLv3**. Commercial dual-licensing options are available for proprietary enterprise distributions. See [LICENSE](LICENSE) and [CLA.md](CLA.md) for details.
 
