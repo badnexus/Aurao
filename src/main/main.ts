@@ -87,6 +87,8 @@ function createEngine(): IEngine {
     availableModels: cfg.availableModels,
     resumeConversationId: currentConversationId || undefined,
     sanitizeLogs: cfg.sanitizeLogs !== false,
+    env: cfg.engineProfile ? cfg.engineProfiles?.[cfg.engineProfile] : undefined,
+    envProfileName: cfg.engineProfile,
   };
   if (cfg.engineType === 'agy') return new AgyEngine(common);
   if (cfg.engineType === 'gpts') {
@@ -356,12 +358,18 @@ function checkCodexHealth(): { ok: boolean; path?: string; provider?: string; me
 
 // --- IPC: everything the renderer may ask for --------------------------------------------
 
-ipcMain.handle('config:get', () => ({
-  ...cfg,
-  approvalMode: cfg.approvalMode || (SKIP_PERMISSIONS ? 'bypass' : 'safe'),
-  language: getLanguage(),
-  runtime: { skipPermissions: SKIP_PERMISSIONS, configPath: configPath() },
-}));
+/** The renderer's view of the config: profile names instead of the profiles (a value may be a key or token). */
+function publicConfig(): Record<string, unknown> {
+  const { engineProfiles, ...rest } = cfg;
+  return {
+    ...rest,
+    engineProfileNames: Object.keys(engineProfiles ?? {}),
+    approvalMode: cfg.approvalMode || (SKIP_PERMISSIONS ? 'bypass' : 'safe'),
+    language: getLanguage(),
+    runtime: { skipPermissions: SKIP_PERMISSIONS, configPath: configPath() },
+  };
+}
+ipcMain.handle('config:get', () => publicConfig());
 ipcMain.handle('system:checkHealth', (_e, engineType?: string) => {
   const eng = engineType || cfg.engineType;
   if (eng === 'agy') return { engine: 'agy', ...checkAgyHealth() };
@@ -375,8 +383,12 @@ ipcMain.handle('config:saveAll', async (_e, newValues: Partial<PocConfig>) => {
   const oldRoot = cfg.workspaceRoot;
   const oldPersona = cfg.persona;
   const oldName = cfg.agentName;
+  const oldProfile = cfg.engineProfile;
 
-  cfg = { ...cfg, ...newValues };
+  // The profiles themselves ship with the app; the renderer may only choose one.
+  const { engineProfiles: _ignored, ...values } = newValues;
+  cfg = { ...cfg, ...values };
+  if (cfg.engineProfile && !cfg.engineProfiles?.[cfg.engineProfile]) delete cfg.engineProfile;
   persist();
 
   if (cfg.agentName !== oldName && win) {
@@ -388,13 +400,14 @@ ipcMain.handle('config:saveAll', async (_e, newValues: Partial<PocConfig>) => {
     cfg.model !== oldModel ||
     cfg.workspaceRepo !== oldRepo ||
     cfg.workspaceRoot !== oldRoot ||
-    cfg.persona !== oldPersona;
+    cfg.persona !== oldPersona ||
+    cfg.engineProfile !== oldProfile;
 
   if (needsRestart) {
     await restartEngine();
   }
 
-  return cfg;
+  return publicConfig();
 });
 ipcMain.handle('skills:list', () => listWorkspaceSkills(cfg.workspaceRepo));
 ipcMain.handle('files:list', (_e, dir?: string) => listDir(dir || cfg.workspaceRoot, Boolean(cfg.showHiddenFiles)));

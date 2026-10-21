@@ -775,6 +775,53 @@
     });
   }
 
+  // ---------- engine profile picker ----------
+  // Named environment sets shipped with the app (two cloud resources, a region, a base URL …).
+  // Only names reach the renderer; the pill is shown when there is something to choose between.
+  const profileSelect = $('engine-profile');
+  const profileField = $('profile-field');
+  const profileDivider = $('profile-divider');
+  const profileSelectCfg = $('cfg-engineProfile');
+  const profileRowCfg = $('row-engineProfile');
+  function fillProfileOptions(select, names, current) {
+    if (!select) return;
+    select.innerHTML = '';
+    const none = document.createElement('option');
+    none.value = '';
+    none.textContent = t('settings.engineProfile_none');
+    select.appendChild(none);
+    for (const name of names) {
+      const o = document.createElement('option');
+      o.value = name;
+      o.textContent = name;
+      select.appendChild(o);
+    }
+    select.value = names.includes(current) ? current : '';
+  }
+  function updateProfileUI(names, current) {
+    state.engineProfileNames = Array.isArray(names) ? names : [];
+    state.engineProfile = current || '';
+    fillProfileOptions(profileSelect, state.engineProfileNames, state.engineProfile);
+    fillProfileOptions(profileSelectCfg, state.engineProfileNames, state.engineProfile);
+    const several = state.engineProfileNames.length > 1;
+    if (profileField) profileField.hidden = !several;
+    if (profileDivider) profileDivider.hidden = !several;
+    if (profileRowCfg) profileRowCfg.hidden = state.engineProfileNames.length === 0;
+  }
+  if (profileSelect) {
+    profileSelect.addEventListener('change', async () => {
+      const chosen = profileSelect.value;
+      if (chosen === state.engineProfile) return;
+      state.engineProfile = chosen;
+      state.ready = false;
+      finishAssistant();
+      setStatus('', t('status.changing_profile'));
+      termLine(`${t('profile.label')}: ${chosen || t('settings.engineProfile_none')} – ${t('status.changing_profile')}`, 'info');
+      const updated = await api.saveAllConfig({ engineProfile: chosen || undefined });
+      updateProfileUI(updated.engineProfileNames, updated.engineProfile);
+    });
+  }
+
   // ---------- language picker ----------
   const languageSelect = $('language');
   if (languageSelect) {
@@ -807,7 +854,7 @@
     const hint = document.querySelector('.hint');
     if (hint) {
       hint.dataset.i18n = isBypass ? 'hint.danger' : 'hint.main';
-      hint.textContent = t(hint.dataset.i18n);
+      hint.textContent = t(hint.dataset.i18n, { agent: state.agentName || 'Aurao' });
     }
   }
 
@@ -979,6 +1026,8 @@
     if (modelInput) modelInput.value = cfg.model || '';
     if (availableModelsInput) availableModelsInput.value = Array.isArray(cfg.availableModels) ? cfg.availableModels.join(', ') : '';
     if (effortSelect) effortSelect.value = cfg.effort || '';
+    fillProfileOptions(profileSelectCfg, cfg.engineProfileNames || [], cfg.engineProfile || '');
+    if (profileRowCfg) profileRowCfg.hidden = !(cfg.engineProfileNames || []).length;
     if (allowedToolsInput) allowedToolsInput.value = Array.isArray(cfg.allowedTools) ? cfg.allowedTools.join(', ') : '';
     if (claudeExecutableInput) claudeExecutableInput.value = cfg.claudeExecutable || '';
 
@@ -1049,6 +1098,7 @@
         model: (modelInput ? modelInput.value.trim() : '') || undefined,
         availableModels: modelsArr,
         effort: (effortSelect ? effortSelect.value : '') || undefined,
+        engineProfile: (profileSelectCfg ? profileSelectCfg.value : '') || undefined,
         allowedTools: toolsArr,
         claudeExecutable: (claudeExecutableInput ? claudeExecutableInput.value.trim() : '') || undefined,
       };
@@ -1067,6 +1117,7 @@
       }
       if (personaSelect) personaSelect.value = updated.persona || 'standard';
       updateApprovalsUI(updated.approvalMode || 'safe');
+      updateProfileUI(updated.engineProfileNames, updated.engineProfile);
       renderDir(updated.workspaceRoot || state.dir);
     });
   }
@@ -1283,6 +1334,7 @@
     updateBrandUI();
 
     state.configuredModel = cfg.model || '';
+    updateProfileUI(cfg.engineProfileNames, cfg.engineProfile);
     state.launchedWithSkip = Boolean(cfg.runtime && cfg.runtime.skipPermissions);
     const initialApprovalMode = cfg.approvalMode || (state.launchedWithSkip ? 'bypass' : 'safe');
     updateApprovalsUI(initialApprovalMode);

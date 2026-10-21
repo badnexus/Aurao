@@ -13,6 +13,7 @@ import type { ApprovalMode } from './config';
 import { t } from './i18n';
 import { StreamAccumulator } from './StreamAccumulator';
 import { stripAnsi } from './LogSanitizer';
+import { applyProfileEnv } from './engineProfiles';
 import type {
   CanUseTool,
   Options,
@@ -101,7 +102,8 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
       includePartialMessages: true,
       // Lets the workspace's hooks (e.g. a SessionStart welcome) adapt to this surface:
       // TERMI_SURFACE says chat UI with skill buttons instead of a terminal, TERMI_LANGUAGE the UI language.
-      env: { ...process.env, TERMI_SURFACE: 'termi', TERMI_LANGUAGE: this.opts.language ?? 'en' },
+      // The engine profile comes last so it can override anything in the system environment.
+      env: applyProfileEnv({ ...process.env, TERMI_SURFACE: 'termi', TERMI_LANGUAGE: this.opts.language ?? 'en' }, this.opts.env),
       systemPrompt: { type: 'preset', preset: 'claude_code', append: this.opts.systemPromptAppend },
       stderr: (data: string) => {
         this.stderrAccumulator.add(data);
@@ -113,6 +115,8 @@ export class ClaudeEngine extends EventEmitter implements IEngine {
       ...(this.opts.continueLatest ? { continue: true } : {}),
     };
     this.emitEvent({ kind: 'terminal', line: t('engine.starting', { agent: this.opts.agentName || 'Agent', cwd: this.opts.cwd }), level: 'info' });
+    // Variable names only: a profile value may be a key or token.
+    if (this.opts.envProfileName) this.emitEvent({ kind: 'terminal', line: t('engine.profile', { name: this.opts.envProfileName, vars: Object.keys(this.opts.env ?? {}).join(', ') || '-' }), level: 'info' });
     if (this.approvalMode === 'bypass') this.emitEvent({ kind: 'terminal', line: t(this.opts.launchedWithSkipFlag ? 'engine.skipWarning' : 'engine.bypassWarning'), level: 'stderr' });
     this.query = sdk.query({ prompt: this.queue, options });
     void this.consume(this.query);

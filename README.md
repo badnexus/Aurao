@@ -148,6 +148,22 @@ Aurao is built with Electron and TypeScript using a clean separation of concerns
 - `src/preload/preload.ts` — Secure context-isolated IPC bridge (`window.aurao` with `window.termi` alias).
 - `src/renderer/` — Reactive UI, glowing aura components, Markdown parsing, and approval cards.
 
+### Engine profiles
+
+`config.json` can ship named environment sets for the engine process — for example two cloud resources,
+a region, or a base URL. The user picks one in Settings (and in the top bar when there are several); the
+choice is remembered per user, the profiles themselves always come from the bundled config. The chosen
+profile is applied after the system environment; `null` removes a variable. Values never reach the UI or
+the logs, only the variable names.
+
+```json
+"engineProfile": "Cloud A",
+"engineProfiles": {
+  "Cloud A": { "MY_PROVIDER_RESOURCE": "resource-a", "MY_PROVIDER_REGION": "eu-west-1" },
+  "Cloud B": { "MY_PROVIDER_RESOURCE": "resource-b", "MY_PROVIDER_REGION": null }
+}
+```
+
 ### License & Commercial Inquiries
 Aurao is distributed under the **GPLv3**. Commercial dual-licensing options are available for proprietary enterprise distributions. See [LICENSE](LICENSE) and [CLA.md](CLA.md) for details.
 

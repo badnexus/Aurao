@@ -1,4 +1,5 @@
 import { t } from './i18n';
+import type { ProfileEnv } from './engineProfiles';
 import type { ApprovalMode } from './config';
 
 export type TerminalLevel = 'info' | 'tool' | 'stderr' | 'hook' | 'result' | 'assistant' | 'thinking';
@@ -47,6 +48,10 @@ export interface EngineOptions {
   continueLatest?: boolean;
   /** Strip ANSI colour codes from the engine's stderr before it is shown in the Terminal view. */
   sanitizeLogs?: boolean;
+  /** Extra environment for the engine process (the chosen engine profile), applied after process.env; null removes a variable. */
+  env?: ProfileEnv;
+  /** Name of the chosen engine profile, for the Terminal view. */
+  envProfileName?: string;
 }
 
 export interface HistoricalMessage {

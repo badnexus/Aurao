@@ -51,6 +51,11 @@
         </select>
       </div>
       <div class="topbar-divider"></div>
+      <div class="topbar-field" id="profile-field" hidden>
+        <span class="topbar-field-label" data-i18n="profile.label">Umgebung</span>
+        <select id="engine-profile" class="pill-select"></select>
+      </div>
+      <div class="topbar-divider" id="profile-divider" hidden></div>
       <div class="topbar-field">
         <span class="topbar-field-label" data-i18n="model.label">KI-Gehirn</span>
         <select id="model" class="pill-select" disabled><option value="">Standard</option></select>
@@ -174,6 +179,11 @@
               <option value="claude">Claude Agent SDK (claude)</option>
               <option value="gpts">OpenAI Codex CLI (codex / GPT)</option>
             </select>
+          </div>
+
+          <div class="form-row" id="row-engineProfile" hidden>
+            <label for="cfg-engineProfile" data-i18n="settings.engineProfile">Umgebungsprofil</label>
+            <select id="cfg-engineProfile" name="engineProfile"></select>
           </div>
 
           <div class="health-box" id="health-box">

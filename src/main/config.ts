@@ -7,6 +7,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { LANGUAGES, type Language } from './i18n';
 import { detectInstalledEngines, resolveFirstRunEngine } from './cliDetect';
+import { sanitizeProfiles, type EngineProfiles } from './engineProfiles';
 
 export type Persona = 'standard' | 'soft';
 export type EngineType = 'claude' | 'agy' | 'gpts';
@@ -60,6 +61,14 @@ export interface PocConfig {
   sanitizeLogs?: boolean;
   /** Show hidden dotfiles/folders (starting with '.') in My Workspace. Defaults to false. */
   showHiddenFiles?: boolean;
+  /**
+   * Named environment sets for the engine process, shipped with the app: e.g. two cloud resources, a region,
+   * a base URL. The chosen one is applied after process.env; a null value removes a variable. Values never
+   * reach the renderer or the logs.
+   */
+  engineProfiles?: EngineProfiles;
+  /** The user's choice among engineProfiles. Omit for the system environment only. */
+  engineProfile?: string;
 }
 
 // dist/main/config.js -> ../.. = POC root (inside app.asar when packaged)
@@ -107,6 +116,7 @@ export const USER_KEYS = [
   'claudeExecutable',
   'sanitizeLogs',
   'showHiddenFiles',
+  'engineProfile',
 ] as const;
 
 function userOverrides(cfg: Partial<PocConfig>, bundled: Partial<PocConfig>): Partial<PocConfig> {
@@ -155,6 +165,10 @@ export function loadConfig(): PocConfig {
   if (cfg.effort !== undefined && !EFFORTS.includes(cfg.effort)) delete cfg.effort;
   if (cfg.allowedTools !== undefined && !(Array.isArray(cfg.allowedTools) && cfg.allowedTools.every((r) => typeof r === 'string'))) delete cfg.allowedTools;
   if (cfg.claudeExecutable !== undefined && (typeof cfg.claudeExecutable !== 'string' || !cfg.claudeExecutable.trim())) delete cfg.claudeExecutable;
+  const profiles = sanitizeProfiles(cfg.engineProfiles);
+  if (profiles) cfg.engineProfiles = profiles;
+  else delete cfg.engineProfiles;
+  if (cfg.engineProfile !== undefined && (typeof cfg.engineProfile !== 'string' || !cfg.engineProfiles?.[cfg.engineProfile])) delete cfg.engineProfile;
   return cfg;
 }
 
