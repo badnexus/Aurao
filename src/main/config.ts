@@ -6,6 +6,7 @@ import { app } from 'electron';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { LANGUAGES, type Language } from './i18n';
+import { expandHome } from './paths';
 import { detectInstalledEngines, resolveFirstRunEngine } from './cliDetect';
 import { sanitizeProfiles, type EngineProfiles } from './engineProfiles';
 
@@ -76,6 +77,11 @@ export const POC_ROOT = path.resolve(__dirname, '..', '..');
 const BUNDLED_CONFIG = path.join(POC_ROOT, 'config.json');
 const CONFIG_PATH = app.isPackaged ? path.join(app.getPath('userData'), 'config.json') : BUNDLED_CONFIG;
 
+// Path settings may be written as "~/x" in a shipped config.json (one file for every user).
+const HOME = app.getPath('home');
+const PATH_KEYS = new Set<string>(['workspaceRepo', 'workspaceRoot', 'claudeExecutable']);
+const normPath = (k: string, v: unknown): unknown => (PATH_KEYS.has(k) && typeof v === 'string' ? expandHome(v, HOME) : v);
+
 const DEFAULTS: PocConfig = {
   engineType: detectInstalledEngines().recommended,
   agentName: 'Aurao',
@@ -124,7 +130,8 @@ function userOverrides(cfg: Partial<PocConfig>, bundled: Partial<PocConfig>): Pa
   // Compare by content: lists (allowedTools, availableModels) are never `===` to the bundled ones, so they
   // were always saved and then froze the user on that release's list.
   const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
-  for (const k of USER_KEYS) if (cfg[k] !== undefined && !same(cfg[k], bundled[k])) out[k] = cfg[k];
+  // Paths are compared expanded, so a user's absolute path equal to the bundled "~/x" is not saved as an override.
+  for (const k of USER_KEYS) if (cfg[k] !== undefined && !same(normPath(k, cfg[k]), normPath(k, bundled[k]))) out[k] = cfg[k];
   return out as Partial<PocConfig>;
 }
 
@@ -157,6 +164,8 @@ export function loadConfig(): PocConfig {
   if (typeof cfg.agentName !== 'string' || !cfg.agentName.trim()) cfg.agentName = DEFAULTS.agentName;
   if (typeof cfg.workspaceRepo !== 'string') cfg.workspaceRepo = DEFAULTS.workspaceRepo;
   if (typeof cfg.workspaceRoot !== 'string') cfg.workspaceRoot = DEFAULTS.workspaceRoot;
+  cfg.workspaceRepo = expandHome(cfg.workspaceRepo, HOME);
+  cfg.workspaceRoot = expandHome(cfg.workspaceRoot, HOME);
   if (typeof cfg.greetOnStart !== 'boolean') cfg.greetOnStart = DEFAULTS.greetOnStart;
   if (typeof cfg.sanitizeLogs !== 'boolean') cfg.sanitizeLogs = DEFAULTS.sanitizeLogs;
   if (typeof cfg.showHiddenFiles !== 'boolean') cfg.showHiddenFiles = DEFAULTS.showHiddenFiles;
@@ -165,6 +174,7 @@ export function loadConfig(): PocConfig {
   if (cfg.effort !== undefined && !EFFORTS.includes(cfg.effort)) delete cfg.effort;
   if (cfg.allowedTools !== undefined && !(Array.isArray(cfg.allowedTools) && cfg.allowedTools.every((r) => typeof r === 'string'))) delete cfg.allowedTools;
   if (cfg.claudeExecutable !== undefined && (typeof cfg.claudeExecutable !== 'string' || !cfg.claudeExecutable.trim())) delete cfg.claudeExecutable;
+  if (cfg.claudeExecutable) cfg.claudeExecutable = expandHome(cfg.claudeExecutable, HOME);
   const profiles = sanitizeProfiles(cfg.engineProfiles);
   if (profiles) cfg.engineProfiles = profiles;
   else delete cfg.engineProfiles;
