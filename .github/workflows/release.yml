@@ -11,8 +11,13 @@ permissions:
 
 jobs:
   release-windows:
-    name: Build & Release Windows Portable
+    name: Build & Release Windows (NSIS Setup + Portable)
     runs-on: windows-latest
+    env:
+      SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+      SIGNPATH_ORGANIZATION_ID: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+      SIGNPATH_PROJECT_SLUG: ${{ vars.SIGNPATH_PROJECT_SLUG || 'aurao' }}
+      SIGNPATH_SIGNING_POLICY_SLUG: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG || 'release-signing' }}
 
     steps:
       - name: Checkout repository
@@ -27,15 +32,45 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build and package Windows Portable
+      - name: Run unit tests
+        run: npm test
+
+      - name: Build and package Windows NSIS Setup & Portable
         run: npm run dist
+
+      - name: Upload unsigned build artifact (for SignPath verification)
+        if: env.SIGNPATH_API_TOKEN != '' && env.SIGNPATH_ORGANIZATION_ID != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-executables
+          path: |
+            release/Aurao-*.exe
+
+      - name: Submit signing request to SignPath.io Foundation
+        if: env.SIGNPATH_API_TOKEN != '' && env.SIGNPATH_ORGANIZATION_ID != ''
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ env.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ env.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ env.SIGNPATH_SIGNING_POLICY_SLUG }}
+          github-artifact-name: unsigned-executables
+          wait-for-completion: true
+          output-artifact-directory: release
+
+      - name: Refresh RELEASE-INFO.txt and Winget SHA-256 after signing
+        if: env.SIGNPATH_API_TOKEN != '' && env.SIGNPATH_ORGANIZATION_ID != ''
+        run: node scripts/release-info.js
+        env:
+          AURAO_SIGNED: '1'
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            release/*.exe
+            release/Aurao-*.exe
             release/RELEASE-INFO.txt
+            release/badnexus.Aurao.yaml
           draft: false
           prerelease: false
           generate_release_notes: true

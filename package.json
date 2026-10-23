@@ -18,7 +18,8 @@
     "test": "npm run build && node --test test/*.test.js",
     "start": "npm run build && electron .",
     "dev": "electron .",
-    "dist": "npm run build && electron-builder --win portable",
+    "icon": "node scripts/generate-icon.js",
+    "dist": "npm run build && electron-builder --win nsis portable",
     "postdist": "node scripts/release-info.js"
   },
   "keywords": [
@@ -31,7 +32,7 @@
     "electron",
     "local-ai"
   ],
-  "author": "",
+  "author": "Florian Schaider <https://github.com/badnexus>",
   "license": "GPL-3.0-only",
   "type": "commonjs",
   "dependencies": {
@@ -48,6 +49,7 @@
   "build": {
     "appId": "com.badnexus.aurao",
     "productName": "Aurao",
+    "copyright": "Copyright © 2026 Florian Schaider",
     "directories": {
       "output": "release"
     },
@@ -55,6 +57,8 @@
       "dist/**/*",
       "!dist/**/*.map",
       "src/renderer/**/*",
+      "build/icon.ico",
+      "build/icon.png",
       "config.json",
       "package.json"
     ],
@@ -62,7 +66,21 @@
       "node_modules/@anthropic-ai/claude-agent-sdk*/**"
     ],
     "win": {
-      "target": "portable"
+      "icon": "build/icon.ico",
+      "requestedExecutionLevel": "asInvoker",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Aurao",
+      "artifactName": "Aurao-Setup-${version}.exe"
     },
     "portable": {
       "artifactName": "Aurao-${version}.exe",

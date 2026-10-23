@@ -15,16 +15,19 @@ try {
   // not installed – leave '?'
 }
 
-const exes = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.toLowerCase().endsWith('.exe')) : [];
+const exes = fs.existsSync(dir)
+  ? fs.readdirSync(dir).filter((f) => /^Aurao.*\.exe$/i.test(f)).sort()
+  : [];
 if (!exes.length) {
   console.error(`Keine .exe in ${dir} gefunden.`);
   process.exit(1);
 }
 
+const isSigned = Boolean(process.env.SIGNPATH_API_TOKEN || process.env.AURAO_SIGNED === '1');
 const lines = [
   `${pkg.productName || pkg.name} ${pkg.version} – Release-Informationen für die IT-Freigabe`,
   `Erstellt: ${new Date().toISOString()}`,
-  `Electron: ${electronVersion} · nicht signiert`,
+  `Electron: ${electronVersion} · ${isSigned ? 'Authenticode-signiert (SignPath.io)' : 'nicht signiert'}`,
   '',
 ];
 for (const name of exes) {
@@ -37,7 +40,8 @@ fs.writeFileSync(path.join(dir, 'RELEASE-INFO.txt'), text, 'utf8');
 
 const wingetTemplatePath = path.join(root, 'packaging', 'winget', 'badnexus.Aurao.yaml');
 if (fs.existsSync(wingetTemplatePath) && exes.length > 0) {
-  const primaryExe = path.join(dir, exes[0]);
+  const portableName = exes.find((f) => f === `Aurao-${pkg.version}.exe`) || exes[0];
+  const primaryExe = path.join(dir, portableName);
   const primaryHash = crypto.createHash('sha256').update(fs.readFileSync(primaryExe)).digest('hex').toUpperCase();
   const wingetYaml = fs
     .readFileSync(wingetTemplatePath, 'utf8')

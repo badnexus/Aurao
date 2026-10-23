@@ -173,6 +173,7 @@ async function startEngine(): Promise<void> {
 }
 
 function createWindow(): void {
+  const iconFile = path.join(POC_ROOT, 'build', process.platform === 'win32' ? 'icon.ico' : 'icon.png');
   win = new BrowserWindow({
     width: 1536,
     height: 1024,
@@ -180,6 +181,7 @@ function createWindow(): void {
     minHeight: 560,
     backgroundColor: '#0b1220',
     title: t('window.title', { agent: cfg.agentName }),
+    icon: fs.existsSync(iconFile) ? iconFile : undefined,
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, '..', 'preload', 'preload.js'),
