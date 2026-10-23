@@ -34,7 +34,11 @@ test('detectInstalledEngines: recommends gpts when only codex is installed on PA
   }
 });
 
-test('detectInstalledEngines: recommends agy when only agy is installed on POSIX PATH', () => {
+// A Windows temp path (C:\...) cannot stand in for a POSIX PATH entry: the ':' after the drive letter is
+// the POSIX separator. On a Windows host the case is therefore skipped (it passed by accident when temp
+// and current directory were on the same drive, and fails on CI agents where they are not).
+test('detectInstalledEngines: recommends agy when only agy is installed on POSIX PATH',
+  { skip: process.platform === 'win32' && 'POSIX PATH cannot be faked with a Windows temp path' }, () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aurao-clidetect-'));
   try {
     createFakeExecutable(tmpDir, 'agy', 'linux');
