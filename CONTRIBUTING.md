@@ -50,4 +50,4 @@ Aurao supports **English (`en`)** and **German (`de`)** with zero developer jarg
 Before opening a Pull Request:
 1. Run `npm test` and ensure all unit tests pass (`test/*.test.js`).
 2. Run `npm run build` and verify zero TypeScript compiler errors.
-3. Review our [Contributor License Agreement (CLA.md)](CLA.md) — by submitting a PR, you agree to the terms in `CLA.md`.
+3. All contributions are licensed under the project's [GNU General Public License v3.0 (GPL-3.0-only)](LICENSE).
