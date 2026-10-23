@@ -170,15 +170,16 @@ the logs, only the variable names.
 folder — so one shipped `config.json` fits every user, for example `"workspaceRepo": "~/MyAssistant"`
 together with `workspaceGitUrl`.
 
-### License
-Aurao is free and open-source software distributed under the **GNU General Public License v3.0 (GPL-3.0-only)**. See [LICENSE](LICENSE) for full details.
+</details>
 
-### Code Signing & Privacy Policy
+---
+
+## Code Signing & Privacy Policy
+
+- **License:** Aurao is free and open-source software distributed under the **GNU General Public License v3.0 (GPL-3.0-only)**. See [LICENSE](LICENSE) for full details.
 - **Code Signing:** Free code signing on Windows is provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
   - **Committers & Reviewers:** [Florian Schaider (@badnexus)](https://github.com/badnexus)
 - **Privacy Policy:** This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it (such as sending prompts to the user's configured AI engine provider or syncing a user-configured Git workspace).
-
-</details>
 
 ---
 
